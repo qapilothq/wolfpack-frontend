@@ -1,14 +1,15 @@
 'use client'
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { Menu, Layers } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 
 const links = [
   { title: 'Create Role', link: '/JD-Create' },
-  { title: 'Dashboard', link: '/dashboard' },
-  { title: 'Configure Assessment', link: '/assessment' }
+  { title: 'Configure Assessment', link: '/assessment' },
+  { title: 'Candidates Dashboard', link: '/dashboard' },
 ]
 
 const Navbar: React.FC = () => {
@@ -22,12 +23,17 @@ const Navbar: React.FC = () => {
   return (
     <nav className='sticky top-0 z-50 bg-white shadow-md'>
       <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8'>
-        <div className='flex justify-between items-center py-4'>
+        <div className='flex justify-between items-center'>
           {/* Logo Section */}
+          <div className='flex gap-2 items-center'>
           <Link href="/" className='flex items-center'>
-            <Layers className='mr-2 h-6 w-6 text-gray-700' />
-            <span className='font-bold text-2xl text-gray-800'>Wolf-Pack</span>
+          <Image src='/wolf-pack-logo.png' alt='Logo' width={80} height={50} />
+            {/* <span className='font-bold text-2xl text-gray-800'>Wolf-Pack</span> */}
+            <h2 className="text-xl text-gray-900 ml-2 font-mono"> Wolf-Pack </h2>
           </Link>
+          
+          </div>
+
 
           {/* Desktop Navigation */}
           <div className='hidden md:flex items-center space-x-4'>
