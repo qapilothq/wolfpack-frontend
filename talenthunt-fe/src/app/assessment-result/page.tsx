@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2Icon, XCircleIcon } from 'lucide-react';
+import { CheckCircle2Icon, XCircleIcon, TargetIcon } from 'lucide-react';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 
 interface Question {
@@ -46,6 +46,23 @@ const candidate: Candidate = {
   }
 };
 
+const CandidateCard: React.FC = () => (
+  <Card className="hover:shadow-lg transition-shadow duration-300">
+    <CardHeader>
+      <div className="flex items-center">
+        <TargetIcon className="mr-2 text-blue-500" />
+        <CardTitle>Personal Information</CardTitle>
+      </div>
+    </CardHeader>
+    <CardContent>
+      <div className="space-y-2">
+        <p><strong>Name:</strong> {candidate.name}</p>
+        <p><strong>Email:</strong> {candidate.email}</p>
+      </div>
+    </CardContent>
+  </Card>
+);
+
 const AssessmentResults: React.FC = () => {
   const [evaluations, setEvaluations] = useState<CandidateEvaluation>({});
   const [assessmentScore, setAssessmentScore] = useState<number | null>(null);
@@ -71,33 +88,32 @@ const AssessmentResults: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-gray-100 pt-12">
-      <div className="container mx-auto">
+
+      <div className="flex flex-col gap-4 mx-10">
+        <div className='flex justify-between items-center'>
+        <h1 className="text-xl font-semibold text-gray-800">Assessment Evaluation
+      </h1>
+      <CandidateCard />
+        </div>
         <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold text-gray-800">Assessment Evaluation</CardTitle>
-          </CardHeader>
-     
-            <CardContent>
-              <div>
-                <h2 className="text-2xl font-bold mb-4 text-gray-800">{candidate.name}</h2>
-                <p className="text-gray-600 mb-4">{candidate.email}</p>
-                
-                {assessmentScore !== null && (
-                  <div className="flex items-center mb-4">
-                    <span className="text-lg font-semibold mr-2">Assessment Score:</span>
-                    <span className={`font-bold ${assessmentScore >= 70 ? 'text-green-600' : 'text-red-600'}`}>
-                      {assessmentScore}%
-                    </span>
-                  </div>
-                )}
-     
-                <Tabs defaultValue="responses">
-                  <TabsList className="grid w-full grid-cols-2 mb-4">
-                    <TabsTrigger value="responses">Candidate Responses</TabsTrigger>
-                    <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
-                  </TabsList>
-                  <ScrollArea className="h-[50vh] overflow-y-auto">
-                  
+          <CardContent>
+            <div className='pt-5'>
+              
+              {assessmentScore !== null && (
+                <div className="flex items-center mb-4">
+                  <span className="text-lg font-semibold mr-2">Assessment Score:</span>
+                  <span className={`font-bold ${assessmentScore >= 70 ? 'text-green-600' : 'text-red-600'}`}>
+                    {assessmentScore}%
+                  </span>
+                </div>
+              )}
+
+              <Tabs defaultValue="responses">
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                  <TabsTrigger value="responses">Candidate Responses</TabsTrigger>
+                  <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
+                </TabsList>
+                <ScrollArea className="h-[50vh] overflow-y-auto">
                   <TabsContent value="responses">
                     {questions.map((question) => (
                       <Card key={question.id} className="mb-4 shadow-md">
@@ -142,10 +158,10 @@ const AssessmentResults: React.FC = () => {
                       </Card>
                     ))}
                   </TabsContent>
-                  </ScrollArea>
-                </Tabs>
-              </div>
-            </CardContent>
+                </ScrollArea>
+              </Tabs>
+            </div>
+          </CardContent>
         </Card>
       </div>
     </div>
