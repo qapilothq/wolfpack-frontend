@@ -1,6 +1,7 @@
 "use client"
 
-import React from 'react'
+import React, {useEffect} from 'react'
+import Link from 'next/link'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -36,57 +37,59 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-const data: Summary[] = [
-  {
-    id: "m5gr84i9",
-    name: "ABCDEFGHIJKLMNOP",
-    score: 70,
-    status: "approved",
-    email: "ken99@yahoo.com",
+
+// const data: Summary[] = [
+//   {
+//     id: "m5gr84i9",
+//     name: "ABCDEFGHIJKLMNOP",
+//     score: 70,
+//     status: "approved",
+//     email: "ken99@yahoo.com",
     
-  },
-  {
-    id: "3u1reuv4",
-    name: "ABCD",
-    score: 75,
-    status: "assessmentsent",
-    email: "Abe45@gmail.com",
-  },
-  {
-    id: "derv1ws0",
-    name: "ABCD",
-    score: 86,
-    status: "assessmentdone",
-    email: "Monserrat44@gmail.com",
-    assessmentscore : 75
-  },
-  {
-    id: "5kma53ae",
-    name: "ABCD",
-    score: 35,
-    status: "rejected",
-    email: "Silas22@gmail.com",
-  },
-  {
-    id: "bhqecj4p",
-    name: "ABCD",
-    score: 90,
-    status: "assessmentdone",
-    email: "carmella@hotmail.com",
-    assessmentscore : 75
-  },
-]
+//   },
+//   {
+//     id: "3u1reuv4",
+//     name: "ABCD",
+//     score: 75,
+//     status: "assessmentsent",
+//     email: "Abe45@gmail.com",
+//   },
+//   {
+//     id: "derv1ws0",
+//     name: "ABCD",
+//     score: 86,
+//     status: "assessmentdone",
+//     email: "Monserrat44@gmail.com",
+//     assessmentscore : 75
+//   },
+//   {
+//     id: "5kma53ae",
+//     name: "ABCD",
+//     score: 35,
+//     status: "rejected",
+//     email: "Silas22@gmail.com",
+//   },
+//   {
+//     id: "bhqecj4p",
+//     name: "ABCD",
+//     score: 90,
+//     status: "assessmentdone",
+//     email: "carmella@hotmail.com",
+//     assessmentscore : 75
+//   },
+// ]
 
 export type Summary = {
-  id: string
+  id: number
   score: number
   assessmentscore?: number
   name: string
   status: "approved" | "rejected" | "assessmentsent" | "assessmentdone"
-  email: string
+  email: string,
 }
 
-export const columns: ColumnDef<Summary>[] = [
+
+export const columns: ColumnDef<any>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -116,24 +119,24 @@ export const columns: ColumnDef<Summary>[] = [
       <div className="capitalize">{row.getValue("name")}</div>
     ),
   },
-  {
-    accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-          <ArrowUpDown />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
-  },
+//   {
+//     accessorKey: "email",
+//     header: ({ column }) => {
+//       return (
+//         <Button
+//           variant="ghost"
+//           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+//         >
+//           Email
+//           <ArrowUpDown />
+//         </Button>
+//       )
+//     },
+//     cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
+//   },
   {
     accessorKey: "score",
-    header: () => <div className="">Score</div>,
+    header: () => <div className="">Profile Score</div>,
     cell: ({ row }) => {
       const score = parseFloat(row.getValue("score"))
 
@@ -147,20 +150,15 @@ export const columns: ColumnDef<Summary>[] = [
     header: "Status",
     cell: ({ row }) => {
         const status = row.getValue("status")
+        const score = parseInt(row.getValue("score"))
         let color: string = ""
         let name : string = ""
-        if(status == 'approved'){
-            name = "Approved"
+        if(score > 65){
+            name = "Eligible"
             color = "text-[#36454F]"
-        }else if(status == 'rejected'){
-            name = "Rejected"
+        }else{
+            name = "Not Eligible"
             color = "text-[#FF0000]"
-        }else if(status == 'assessmentsent'){
-            name = "Assessment Link Sent"
-            color = "text-[#0000FF]"
-        }else if(status == 'assessmentdone'){
-            name = "Assessment Done"
-            color = "text-[#008000]"
         }
 
       return <div className={`capitalize ${color}` } >{name}</div>
@@ -188,6 +186,7 @@ export const columns: ColumnDef<Summary>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const payment = row.original
+    //   const candidateid = row.getValue("id")
 
       return (
         <DropdownMenu>
@@ -198,15 +197,13 @@ export const columns: ColumnDef<Summary>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
+            onClick={() => {
+                return <Link href={'/candidate'}></Link>
+            }}
             >
-              Copy payment ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
+            Profile View</DropdownMenuItem>
+            <DropdownMenuItem>Send Assessment Link</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
@@ -214,14 +211,44 @@ export const columns: ColumnDef<Summary>[] = [
   },
 ]
 
-export function DataTable() {
+type props = {
+  roleid: String
+}
+
+const DataTable: React.FC<props> = (roleid) => {
+
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   )
+  const [data, setData] = React.useState<any[]>([])
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+
+  useEffect(()=>{
+    const fetchJD = async () =>{
+      const getdata = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
+        method: "POST",
+        headers: {
+          "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
+        },
+        body: JSON.stringify({
+          "requestType" : "getProfiles",
+          "role_id": roleid.roleid
+          }), 
+      });
+      if(getdata.ok){
+        const data = await getdata.json();
+        setData(data);
+        console.log(data);
+      }else{
+        console.log("Error")
+      }
+    }
+
+    fetchJD();
+  }, [])
 
   const table = useReactTable({
     data,
@@ -324,3 +351,5 @@ export function DataTable() {
     </div>
   )
 }
+
+export default DataTable
