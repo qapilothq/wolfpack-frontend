@@ -84,7 +84,6 @@ const Assessment: React.FC = () => {
                 removeQuestion={addOrRemoveQuestion} 
               />
               <RightPanel 
-                selectedRole={selectedRole}
                 questionsAdded={questionsAdded}
                 addOrRemoveQuestion={addOrRemoveQuestion}
               />
