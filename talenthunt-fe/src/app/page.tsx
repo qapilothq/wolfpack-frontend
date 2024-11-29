@@ -62,7 +62,7 @@ const Home: React.FC = () => {
               <CardTitle>GitHub Integration</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Analyze candidates' coding skills directly from their repositories</p>
+            <p>Analyze candidates&apos; coding skills directly from their repositories</p>
             </CardContent>
           </Card>
           <Card>

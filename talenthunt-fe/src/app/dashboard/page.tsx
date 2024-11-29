@@ -5,7 +5,6 @@ import { DataTable } from './table'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
