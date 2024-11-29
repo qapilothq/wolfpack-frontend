@@ -97,13 +97,11 @@ const Assessment: React.FC = () => {
 }
 
 interface RightPanelProps {
-  selectedRole: string;
   questionsAdded: string[];
   addOrRemoveQuestion: (question: string) => void;
 }
 
 const RightPanel: React.FC<RightPanelProps> = ({ 
-  selectedRole, 
   questionsAdded,
   addOrRemoveQuestion 
 }) => {
