@@ -3,11 +3,11 @@ import Link from 'next/link'
 const links = [
   {
     'title': 'Create role',
-    'link': 'pages/JD-Create'
+    'link': '/JD-Create'
   },
   {
     'title': 'Dashboard',
-    'link': 'pages/dashboard'
+    'link': '/dashboard'
   },
 ]
 
