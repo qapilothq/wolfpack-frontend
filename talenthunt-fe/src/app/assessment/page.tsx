@@ -1,228 +1,149 @@
-'use client'
+'use client';
 import React, { useState } from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { PlusIcon, TrashIcon } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { CheckCircle2Icon, AlertCircleIcon } from 'lucide-react';
+import { ScrollArea } from '@radix-ui/react-scroll-area';
 
-// Define the roles as a JSON object with type annotations
-const roles: Record<string, string> = {
-  'Front-end Dev': "Responsible for implementing visual elements that users see and interact within a web application.",
-  'Back-end Dev': "Responsible for server-side web application logic and integration of the work front-end developers do.",
-  'Product Manager': "Responsible for guiding the success of a product and leading the cross-functional team that is responsible for improving it.",
-  'Project Manager': "Responsible for planning, executing, and overseeing the completion of projects to ensure that it is completed in line with the company's goals."
-};
+interface AssessmentQuestion {
+  id: number;
+  category: string;
+  question: string;
+  maxWords: number;
+}
 
-const AIsuggested: string[] = [
-  'What are the key responsibilities of a Front-end Developer?',
-  'Explain the concept of RESTful APIs and their importance in web development.',
-  'How do you prioritize tasks when managing a project with tight deadlines?',
-  'Describe a challenging situation you faced in a team project and how you handled it.',
-  'What strategies do you use to ensure effective communication within a cross-functional team?'
+const assessmentQuestions: AssessmentQuestion[] = [
+  {
+    id: 1,
+    category: 'Technical Skill',
+    question: "Describe a challenging technical problem you've solved and explain your approach to solving it.",
+    maxWords: 300
+  },
+  {
+    id: 2,
+    category: 'Project Experience',
+    question: "Tell us about a project where you demonstrated leadership or collaboration skills. What was your role, and what was the outcome?",
+    maxWords: 250
+  },
+  {
+    id: 3,
+    category: 'Problem-Solving',
+    question: "Reflect on a situation where you had to learn a new technology or skill quickly. How did you approach the learning process?",
+    maxWords: 200
+  },
+  {
+    id: 4,
+    category: 'Career Goals',
+    question: "Where do you see yourself professionally in the next three years, and how does this role align with your career aspirations?",
+    maxWords: 250
+  }
 ];
 
-const Assessment: React.FC = () => {
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [questionsAdded, setQuestionsAdded] = useState<string[]>([]);
+const CandidateAssessment: React.FC = () => {
+  const [responses, setResponses] = useState<Record<number, string>>({});
+  const [wordCounts, setWordCounts] = useState<Record<number, number>>({});
+  const [submitted, setSubmitted] = useState<boolean>(false);
 
-  const addOrRemoveQuestion = (question: string) => {
-    setQuestionsAdded(prev => 
-      prev.includes(question) 
-        ? prev.filter(q => q !== question)
-        : [...prev, question]
-    );
+  const handleResponseChange = (questionId: number, response: string) => {
+    const wordCount = response.trim().split(/\s+/).filter(word => word.length > 0).length;
+    
+    setResponses(prev => ({
+      ...prev,
+      [questionId]: response
+    }));
+
+    setWordCounts(prev => ({
+      ...prev,
+      [questionId]: wordCount
+    }));
   };
 
-  return (
-    <div className='min-h-screen w-full bg-gray-50 p-8'>
-      <div className='max-w-6xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden'>
-        <div className='bg-gray-100 p-6 border-b border-gray-200'>
-          <h1 className='font-bold text-3xl text-gray-800'>
-            Configure Assessment
-          </h1>
-        </div>
+  const handleSubmit = () => {
+    const allQuestionsAnswered = assessmentQuestions.every(q => 
+      responses[q.id] && 
+      responses[q.id].trim().length > 0 && 
+      (wordCounts[q.id] || 0) <= q.maxWords
+    );
 
-        <div className='p-6'>
-          <div className='mb-6'>
-            <Select onValueChange={(value: string) => setSelectedRole(value)}>
-              <SelectTrigger className="w-full max-w-md">
-                <SelectValue placeholder="Choose the Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {Object.keys(roles).map((roleName, index) => (
-                    <SelectItem
-                      key={index}
-                      value={roleName}
-                    >
-                      {roleName}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-
-            {selectedRole && (
-              <div className='mt-4 text-sm text-gray-600 bg-gray-50 p-4 rounded-lg'>
-                <span className='font-semibold text-gray-800'>Role Description: </span>
-                {roles[selectedRole]}
-              </div>
-            )}
-          </div>
-
-          {selectedRole && (
-            <div className='grid md:grid-cols-2 gap-6'>
-              <Leftpanel 
-                questionsAdded={questionsAdded} 
-                removeQuestion={addOrRemoveQuestion} 
-              />
-              <RightPanel 
-                questionsAdded={questionsAdded}
-                addOrRemoveQuestion={addOrRemoveQuestion}
-              />
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-interface RightPanelProps {
-  questionsAdded: string[];
-  addOrRemoveQuestion: (question: string) => void;
-}
-
-const RightPanel: React.FC<RightPanelProps> = ({ 
-  questionsAdded,
-  addOrRemoveQuestion 
-}) => {
-  return(
-    <div className='space-y-4'>
-      <div>
-        <h2 className='font-bold text-xl text-gray-800 mb-4'>AI Suggested Questions</h2>
-        <div className='space-y-4'>
-          {AIsuggested.map((question) => (
-            <QuestionCard 
-              key={question} 
-              question={question} 
-              onAddRemove={() => addOrRemoveQuestion(question)}
-              isAdded={questionsAdded.includes(question)}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-interface QuestionCardProps {
-  question: string;
-  onAddRemove: () => void;
-  isAdded: boolean;
-}
-
-const QuestionCard: React.FC<QuestionCardProps> = ({ 
-  question, 
-  onAddRemove, 
-  isAdded 
-}) => {
-  return (
-    <div className='border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-all duration-300'>
-      <p className='mb-4 text-gray-700'>{question}</p>
-      <Button 
-        onClick={onAddRemove}
-        variant={isAdded ? 'destructive' : 'default'}
-        className='w-full'
-      >
-        {isAdded ? (
-          <>
-            <TrashIcon className='mr-2 h-4 w-4' />
-            Remove from Assessment
-          </>
-        ) : (
-          <>
-            <PlusIcon className='mr-2 h-4 w-4' />
-            Add to Assessment
-          </>
-        )}
-      </Button>
-    </div>
-  );
-}
-
-interface LeftpanelProps {
-  questionsAdded: string[];
-  removeQuestion: (question: string) => void;
-}
-
-const Leftpanel: React.FC<LeftpanelProps> = ({ 
-  questionsAdded, 
-  removeQuestion 
-}) => {
-  const [newQuestion, setNewQuestion] = useState<string>('');
-
-  const handleAddCustomQuestion = () => {
-    if (newQuestion.trim()) {
-      removeQuestion(newQuestion);
-      setNewQuestion('');
+    if (allQuestionsAnswered) {
+      setSubmitted(true);
+      console.log('Candidate Responses:', responses);
+    } else {
+      alert('Please complete all questions within the word limit');
     }
   };
 
-  return (
-    <div className='bg-gray-100 rounded-xl p-6 space-y-4'>
-      <div>
-        <h2 className='font-bold text-xl text-gray-800 mb-4'>Added Questions</h2>
-        {questionsAdded.length === 0 ? (
-          <div className='text-gray-500 italic text-center py-8 border-2 border-dashed border-gray-300 rounded-lg'>
-            No questions added yet
-          </div>
-        ) : (
-          <div className='space-y-2'>
-            {questionsAdded.map((question, index) => (
-              <div 
-                key={index} 
-                className='bg-white p-3 rounded-lg shadow-sm flex justify-between items-center'
-              >
-                <span className='text-gray-700'>{`${index + 1}. ${question}`}</span>
-                <Button 
-                  variant='ghost' 
-                  size='icon'
-                  onClick={() => removeQuestion(question)}
-                >
-                  <TrashIcon className='h-4 w-4 text-red-500' />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
+  if (submitted) {
+    return (
+      <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center">
+        <Card className="w-full max-w-2xl shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center text-xl font-bold">
+              <CheckCircle2Icon className="mr-2 text-green-500" />
+              Assessment Submitted
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700">Your assessment has been successfully submitted. Our team will review your responses shortly.</p>
+          </CardContent>
+        </Card>
       </div>
-      
-      <div className='flex space-x-2'>
-        <Input 
-          type='text' 
-          value={newQuestion} 
-          onChange={(e) => setNewQuestion(e.target.value)} 
-          placeholder='Add a custom question' 
-          className='flex-grow'
-        />
-        <Button 
-          onClick={handleAddCustomQuestion} 
-          disabled={!newQuestion.trim()}
-        >
-          <PlusIcon className='mr-2 h-4 w-4' />
-          Add
-        </Button>
+    );
+  }
+
+  return (
+    <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-gray-100 pt-12">
+    <div className="container mx-auto">
+      <div className="">
+        <Card className="w-full shadow-md">
+          <CardHeader>
+            <CardTitle className="text-2xl font-semibold text-gray-800">Professional Assessment</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[60vh] overflow-y-auto">
+              {assessmentQuestions.map((question) => (
+                <div key={question.id} className="mb-8">
+                  <Label className="text-lg font-semibold mb-4 text-gray-700">{question.question}</Label>
+                  <Textarea 
+                    placeholder={`Your response (Max ${question.maxWords} words)`}
+                    className={`mt-2 min-h-[200px] border ${
+                      (wordCounts[question.id] || 0) > question.maxWords 
+                      ? 'border-red-500' 
+                      : 'border-gray-300'
+                    }`}
+                    onChange={(e) => handleResponseChange(question.id, e.target.value)}
+                  />
+                  <div className="flex items-center mt-2">
+                    {(wordCounts[question.id] || 0) > question.maxWords && (
+                      <AlertCircleIcon className="mr-2 text-red-500" />
+                    )}
+                    <span className={`text-sm ${
+                      (wordCounts[question.id] || 0) > question.maxWords 
+                      ? 'text-red-500' 
+                      : 'text-gray-500'
+                    }`}>
+                      Word Count: {wordCounts[question.id] || 0}/{question.maxWords}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </ScrollArea>
+            <div className="flex justify-end mt-4">
+              <Button 
+                className=" text-white font-medium py-2 px-4 rounded"
+                onClick={handleSubmit}
+              >
+                Submit Assessment
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Assessment;
+export default CandidateAssessment;

@@ -8,7 +8,7 @@ import Image from 'next/image'
 
 const links = [
   { title: 'Create Role', link: '/JD-Create' },
-  { title: 'Configure Assessment', link: '/assessment' },
+  { title: 'Configure Assessment', link: '/configure-assessment' },
   { title: 'Candidates Dashboard', link: '/dashboard' },
 ]
 
