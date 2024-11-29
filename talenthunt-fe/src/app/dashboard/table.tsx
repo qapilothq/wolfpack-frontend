@@ -14,17 +14,14 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+import {MoreHorizontal } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
@@ -84,7 +81,7 @@ export type Summary = {
   score: number
   assessmentscore?: number
   name: string
-  status: "approved" | "rejected" | "assessmentsent" | "assessmentdone"
+  // status: "approved" | "rejected" | "assessmentsent" | "assessmentdone"
   email: string,
 }
 
@@ -149,7 +146,7 @@ export const columns: ColumnDef<any>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-        const status = row.getValue("status")
+        // const status = row.getValue("status")
         const score = parseInt(row.getValue("score"))
         let color: string = ""
         let name : string = ""
@@ -185,7 +182,7 @@ export const columns: ColumnDef<any>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row.original
+      // const payment = row.original
       const candidateid = row.getValue("id")
 
       return (
@@ -212,7 +209,7 @@ export const columns: ColumnDef<any>[] = [
 ]
 
 type props = {
-  roleid: String
+  roleid: string
 }
 
 const DataTable: React.FC<props> = (roleid) => {
@@ -221,7 +218,7 @@ const DataTable: React.FC<props> = (roleid) => {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   )
-  const [data, setData] = React.useState<any[]>([])
+  const [data, setData] = React.useState([])
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})

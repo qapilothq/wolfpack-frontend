@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import Combobox from './dropdown'
 import { FileUp } from 'lucide-react'
 import DataTable from './table'
-import { Label } from '@/components/ui/label'
+// import { Label } from '@/components/ui/label'
 import { useToast } from "@/hooks/use-toast"
 import {
   Card,
@@ -13,15 +13,15 @@ import {
 } from "@/components/ui/card"
 import { Button } from '@/components/ui/button'
 
-const index = () => {
+const Index = () => {
   const { toast } = useToast()
   const [dropdownValue, setDropdownValue] = useState<string>("");
-  const [file, setFile] = useState<File | null>(null);
+  // const [file, setFile] = useState<File | null>(null);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const newfile = event.target.files[0];
-      setFile(newfile);
+      // setFile(newfile);
       console.log("Selected File:", newfile);
       if (dropdownValue) {
         await uploadFile(newfile);
@@ -146,4 +146,4 @@ const index = () => {
   )
 }
 
-export default index
+export default Index
