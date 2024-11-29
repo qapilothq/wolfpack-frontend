@@ -21,7 +21,8 @@ import {
 
 const index = () => {
   return (
-    <div className='flex flex-col items-center'>
+    <div className='flex items-center justify-center h-full w-full'>
+          <div className='flex flex-col items-center'>
       <Card className="w-[750px]">
         <CardHeader>
           <CardTitle>Select Job Description</CardTitle>
@@ -54,6 +55,7 @@ const index = () => {
             <DataTable />
         </CardContent>
       </Card>
+    </div>
     </div>
   )
 }
