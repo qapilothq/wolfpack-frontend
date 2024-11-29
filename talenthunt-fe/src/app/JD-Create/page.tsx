@@ -48,6 +48,28 @@ const CreateRoles: React.FC = () => {
 
   const submitHandler = () => {
     console.log('Roles submitted:', roles)
+    roles.forEach(value => {
+      const submitrole: any = fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
+        method: "POST",
+        headers: {
+          "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
+        },
+        body: JSON.stringify({
+          "requestType" : "createRole",
+          "role":{
+            "name": value.name,
+            "job_description": value.desc
+          }
+          }), 
+      });
+      if(submitrole.ok){
+        const data = submitrole.json();
+        console.log(data);
+      }else{
+        console.log("Error")
+      }
+    });
+    setRoles([])
     // Here you would typically send the roles to your backend
   }
 

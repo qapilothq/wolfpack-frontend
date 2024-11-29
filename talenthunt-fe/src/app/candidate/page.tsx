@@ -1,4 +1,5 @@
-import React from 'react';
+"use client"
+import React, {use, useEffect} from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -8,15 +9,43 @@ import {
   TargetIcon 
 } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area"
-
+import { usePathname, useSearchParams } from 'next/navigation';
 
 const CandidateProfile: React.FC = () => {
+  const [userData, setUserData] = React.useState<any>(null);
+
+  // const pathname = usePathname();
+// console.log(pathname)
+  const searchParams = useSearchParams(); // Parses query parameters
+  const id = searchParams.get("id");
+
+  const getuserdata = async () => {
+    const dataapi: any = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
+      method: "POST",
+      headers: {
+        "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
+      },
+      body: JSON.stringify({
+        "requestType" : "getProfileSummary",
+        "profile_id": id
+        }), 
+    });
+    if(dataapi.ok){
+      const finaluserdata = await dataapi.json();
+      setUserData(finaluserdata[0]);
+      console.log(finaluserdata); 
+    }
+  }
+  React.useEffect(() => {
+    getuserdata();
+  }, []); 
+
   // Candidate data (would typically come from props or API)
   const candidateData = {
     personalInfo: {
-      name: "Vinod G",
-      phone: 7036186014,
-      email: "vinodgullipalli16@gmail.com"
+      name: userData?.pi?.Name,
+      phone: userData?.pi['Phone Number'],
+      email: userData?.pi?.Email,
     },
     workExperience: [
       {
@@ -45,12 +74,8 @@ const CandidateProfile: React.FC = () => {
         description: "Enterprise-wide solution for comprehensive patient information across care points."
       }
     ],
-    education: "Bachelor of Technology (B.Tech) from JNTUK University",
-    skills: [
-      "React.js", "Redux", "JavaScript", "ES6", 
-      "Material UI", "Bootstrap", "HTML5", "CSS3", 
-      "Git", "Babel", "Webpack", "Jest", "Cypress"
-    ]
+    education: userData?.education,
+    skills: userData?.skills?.split(',')
   };
 
   return (
@@ -84,13 +109,14 @@ const CandidateProfile: React.FC = () => {
             </CardHeader>
           <ScrollArea className="h-[200px]">
             <CardContent>
-              {candidateData.workExperience.map((job, index) => (
+              {userData?.work_history['Work Experience']?.map((value: any, index: any) => (
                 <div key={index} className="mb-4">
-                  <p className="font-semibold">{job.role}</p>
-                  <p className="text-gray-600">{job.company}</p>
-                  <p className="text-sm text-gray-500">{job.duration}</p>
+                  <p className="font-semibold">{value['Role']}</p>
+                  <p className="text-gray-600">{value['Company Name']}</p>
+                  <p className="text-sm text-gray-500">{value['Duration']}</p>
                 </div>
-              ))}
+              ))
+            }
             </CardContent>
           </ScrollArea>
           </Card>
@@ -121,10 +147,10 @@ const CandidateProfile: React.FC = () => {
             </CardHeader>
             <ScrollArea className="h-[200px]">
             <CardContent>
-              {candidateData.projects.map((project, index) => (
+              {userData?.projects['Project details'].map((value:any, index:any) => (
                 <div key={index} className="mb-4">
-                  <p className="font-semibold">{project.name}</p>
-                  <p className="text-gray-600">{project.description}</p>
+                  <p className="font-semibold">{value['Project Name']}</p>
+                  <p className="text-gray-600">{value['Project Description']}</p>
                 </div>
               ))}
             </CardContent>
@@ -142,7 +168,7 @@ const CandidateProfile: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {candidateData.skills.map((skill, index) => (
+                {candidateData?.skills?.map((skill: any, index: any) => (
                   <span 
                     key={index} 
                     className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded"
