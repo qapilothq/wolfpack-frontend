@@ -40,10 +40,15 @@ import {
     selectedValue: string
     onSelect: (value: string) => void
   }
+
+  interface JobData {
+    id: string;
+    name: string;
+  }
   
 const Combobox: React.FC<props> = ({ selectedValue, onSelect }) => {
     const [open, setOpen] = React.useState(false)
-    const [data, setData] = React.useState<any[]>([])
+    const [data, setData] = React.useState<JobData[]>([]); // Use the JobData interface
 
     useEffect(()=>{
       const fetchJD = async () =>{
@@ -92,7 +97,7 @@ const Combobox: React.FC<props> = ({ selectedValue, onSelect }) => {
                 {data.map((data) => (
                   <CommandItem
                     key={data.id}
-                    onSelect={(currentValue) => {
+                    onSelect={() => {
                       onSelect(data.id);
                       setOpen(false)
                     }}

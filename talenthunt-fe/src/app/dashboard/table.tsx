@@ -76,17 +76,24 @@ import {
 //   },
 // ]
 
-export type Summary = {
-  id: number
-  score: number
-  assessmentscore?: number
-  name: string
-  // status: "approved" | "rejected" | "assessmentsent" | "assessmentdone"
-  email: string,
-}
+// export type Summary = {
+//   id: number
+//   score: number
+//   assessmentscore?: number
+//   name: string
+//   // status: "approved" | "rejected" | "assessmentsent" | "assessmentdone"
+//   email: string,
+// }
+type TableData = {
+  id: number;
+  name: string;
+  score: number;
+  assessmentscore?: number;
+  email: string;
+};
 
 
-export const columns: ColumnDef<any>[] = [
+export const columns: ColumnDef<TableData>[] = [
   {
     id: "select",
     header: ({ table }) => (

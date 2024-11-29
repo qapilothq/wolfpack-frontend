@@ -5,12 +5,6 @@ import { FileUp } from 'lucide-react'
 import DataTable from './table'
 // import { Label } from '@/components/ui/label'
 import { useToast } from "@/hooks/use-toast"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { Button } from '@/components/ui/button'
 
 const Index = () => {
@@ -20,7 +14,7 @@ const Index = () => {
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      const newfile = event.target.files[0];
+      const newfile: File = event.target.files[0]; // Specify File type
       // setFile(newfile);
       console.log("Selected File:", newfile);
       if (dropdownValue) {
@@ -43,13 +37,13 @@ const Index = () => {
           "role_id": dropdownValue
         }),
       });
-
+  
       if (response.ok) {
-        const resp = await response.json();
+        const resp: { signedUrl: string; path: string; token: string } = await response.json(); // Specify response type
         console.log("Response:", resp);
         const { signedUrl, path, token } = resp;
         console.log("URL:", signedUrl);
-
+  
         if (signedUrl) {
           const fileuploadAPI = await fetch(signedUrl, {
             method: "PUT",
@@ -59,7 +53,7 @@ const Index = () => {
             },
             body: file,
           });
-
+  
           if (fileuploadAPI.ok) {
             const resumematch = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
               method: "POST",
@@ -74,7 +68,7 @@ const Index = () => {
                 }
               }),
             });
-
+  
             if (resumematch.ok) {
               console.log("Profile created successfully");
             }
