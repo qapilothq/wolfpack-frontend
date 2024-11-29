@@ -186,7 +186,7 @@ export const columns: ColumnDef<any>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const payment = row.original
-    //   const candidateid = row.getValue("id")
+      const candidateid = row.getValue("id")
 
       return (
         <DropdownMenu>
@@ -199,7 +199,7 @@ export const columns: ColumnDef<any>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuItem
             onClick={() => {
-                return <Link href={'/candidate'}></Link>
+                return <Link href={`/candidate?id=${candidateid}`}></Link>
             }}
             >
             Profile View</DropdownMenuItem>
@@ -248,7 +248,7 @@ const DataTable: React.FC<props> = (roleid) => {
     }
 
     fetchJD();
-  }, [])
+  }, [roleid])
 
   const table = useReactTable({
     data,

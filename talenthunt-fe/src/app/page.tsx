@@ -102,7 +102,7 @@ const Home: React.FC = () => {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { icon: <MagnifyingGlassIcon />, title: "Comprehensive Screening", description: "Evaluate technical and soft skills through multiple touchpoints" },
-              { icon: <ShieldIcon />, title: "Eliminated Bias", description: "Standardized AI-driven assessments ensure fair candidate evaluation" },
+              { icon: <ShieldIcon />, title: "Eliminate Bias", description: "Standardized AI-driven assessments ensure fair candidate evaluation" },
               { icon: <MicrophoneIcon />, title: "Advanced Voice Analysis", description: "Coming Soon" }
             ].map((feature, index) => (
               <div 
