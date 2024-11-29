@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -250,4 +250,10 @@ const CandidateAssessment: React.FC = () => {
   );
 };
 
-export default CandidateAssessment;
+const CandidateAssessmentPage: React.FC = () => (
+  <Suspense fallback={<div>Loading...</div>}>
+    <CandidateAssessment />
+  </Suspense>
+);
+
+export default CandidateAssessmentPage;

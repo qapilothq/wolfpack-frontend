@@ -17,7 +17,7 @@ const CreateRoles: React.FC = () => {
   const [currentRole, setCurrentRole] = useState<Role>({ name: '', desc: '' })
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
 
-  const addOrUpdateRole = () => {
+  const addOrUpdateRole = (): void => {
     if (!currentRole.name.trim() || !currentRole.desc.trim()) {
       return; // Prevent adding empty roles
     }
@@ -37,40 +37,44 @@ const CreateRoles: React.FC = () => {
     setCurrentRole({ name: '', desc: '' });
   }
 
-  const removeRole = (indexToRemove: number) => {
+  const removeRole = (indexToRemove: number): void => {
     setRoles(roles.filter((_, index) => index !== indexToRemove));
   }
 
-  const editRole = (index: number) => {
+  const editRole = (index: number): void => {
     setCurrentRole(roles[index]);
     setEditingIndex(index);
   }
 
-  const submitHandler = () => {
+  const submitHandler = async (): Promise<void> => {
     console.log('Roles submitted:', roles)
-    roles.forEach(value => {
-      const submitrole: any = fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
-        method: "POST",
-        headers: {
-          "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
-        },
-        body: JSON.stringify({
-          "requestType" : "createRole",
-          "role":{
-            "name": value.name,
-            "job_description": value.desc
-          }
-          }), 
-      });
-      if(submitrole.ok){
-        const data = submitrole.json();
-        console.log(data);
-      }else{
-        console.log("Error")
+    for (const value of roles) {
+      try {
+        const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
+          },
+          body: JSON.stringify({
+            "requestType": "createRole",
+            "role": {
+              "name": value.name,
+              "job_description": value.desc
+            }
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data);
+        } else {
+          console.log("Error");
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
       }
-    });
-    setRoles([])
-    // Here you would typically send the roles to your backend
+    }
+    setRoles([]);
   }
 
   return (
@@ -160,7 +164,7 @@ const AddRoleForm: React.FC<AddRoleFormProps> = ({
   onSubmit,
   isEditing 
 }) => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     onSubmit();
   }
