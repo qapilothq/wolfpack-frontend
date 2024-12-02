@@ -40,38 +40,39 @@ const CandidateProfile: React.FC = () => {
   const searchParams = useSearchParams(); 
   const id = searchParams.get("id");
 
-  const getuserdata = async () => {
-    try {
-      const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
-        method: "POST",
-        headers: {
-          "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
-        },
-        body: JSON.stringify({
-          "requestType" : "getProfileSummary",
-          "profile_id": id
-        }), 
-      });
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
-      }
-
-      const finaluserdata = await response.json();
-      setUserData(finaluserdata[0]);
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error fetching data:", error.message);
-        setError(error.message);
-      } else {
-        console.error("Unexpected error:", error);
-      }
-    }
-  }
 
   useEffect(() => {
+    const getuserdata = async () => {
+      try {
+        const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
+          method: "POST",
+          headers: {
+            "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
+          },
+          body: JSON.stringify({
+            "requestType" : "getProfileSummary",
+            "profile_id": id
+          }), 
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+  
+        const finaluserdata = await response.json();
+        setUserData(finaluserdata[0]);
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error("Error fetching data:", error.message);
+          setError(error.message);
+        } else {
+          console.error("Unexpected error:", error);
+        }
+      }
+    }
     getuserdata();
-  }, [getuserdata]); 
+  }, []); 
 
   if (error) {
     return <div>Error: {error}</div>;
