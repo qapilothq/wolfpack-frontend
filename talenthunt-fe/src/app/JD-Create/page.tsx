@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from "@/components/ui/label"
 import { PlusIcon, Layers, Save } from 'lucide-react'
 import { X } from 'lucide-react'
+import { redirect } from 'next/navigation'
 
 interface Role {
   name: string;
@@ -16,6 +17,7 @@ const CreateRoles: React.FC = () => {
   const [roles, setRoles] = useState<Role[]>([])
   const [currentRole, setCurrentRole] = useState<Role>({ name: '', desc: '' })
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const addOrUpdateRole = (): void => {
     if (!currentRole.name.trim() || !currentRole.desc.trim()) {
@@ -23,17 +25,15 @@ const CreateRoles: React.FC = () => {
     }
 
     if (editingIndex !== null) {
-      // Update existing role
       const updatedRoles = [...roles];
       updatedRoles[editingIndex] = currentRole;
       setRoles(updatedRoles);
       setEditingIndex(null);
     } else {
-      // Add new role
+
       setRoles([...roles, currentRole]);
     }
 
-    // Reset current role
     setCurrentRole({ name: '', desc: '' });
   }
 
@@ -47,6 +47,7 @@ const CreateRoles: React.FC = () => {
   }
 
   const submitHandler = async (): Promise<void> => {
+    setIsLoading(true)
     console.log('Roles submitted:', roles)
     for (const value of roles) {
       try {
@@ -74,7 +75,11 @@ const CreateRoles: React.FC = () => {
         console.error("Fetch error:", error);
       }
     }
-    setRoles([]);
+
+    setRoles([])
+    setIsLoading(false)
+    redirect('/dashboard')
+    ;
   }
 
   return (
@@ -138,12 +143,16 @@ const CreateRoles: React.FC = () => {
         </div>
 
         <div className='bg-gray-100 p-6 border-t border-gray-200 flex justify-end'>
-          <Button 
+        <Button 
             onClick={submitHandler}
-            disabled={roles.length === 0}
+            disabled={roles.length === 0 || isLoading}
           >
-            <Save className='mr-2 h-4 w-4' />
-            Submit Roles
+            {isLoading ? 'Submitting...' : (
+              <>
+                <Save className='mr-2 h-4 w-4' />
+                Submit Roles
+              </>
+            )}
           </Button>
         </div>
       </div>

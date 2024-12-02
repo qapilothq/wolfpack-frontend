@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 const Index = () => {
   const { toast } = useToast()
   const [dropdownValue, setDropdownValue] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
   // const [file, setFile] = useState<File | null>(null);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,11 +27,12 @@ const Index = () => {
   };
 
   const uploadFile = async (file: File) => {
+    setIsUploading(true)
     try {
       const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
         method: "POST",
         headers: {
-          "Authorization": "Bearer YOUR_TOKEN_HERE"
+          "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
         },
         body: JSON.stringify({
           "requestType": "getSignedUrl",
@@ -72,6 +74,11 @@ const Index = () => {
             if (resumematch.ok) {
               console.log("Profile created successfully");
             }
+            const temp = dropdownValue
+            setIsUploading(false);
+            setDropdownValue("");
+            setDropdownValue(temp);
+
             toast({
               title: "File uploaded successfully!",
             });
@@ -125,8 +132,9 @@ const Index = () => {
           />
           <Button className=''
             onClick={() => document.getElementById("resume")?.click()}
+            disabled={!dropdownValue}
           >
-            <FileUp /> Upload Resume
+            <FileUp /> {isUploading ? "Uploading..." : "Upload Resume"}
           </Button>
           {/* {file && <Label className='mt-2'>{file.name}</Label>} */}
         </div>

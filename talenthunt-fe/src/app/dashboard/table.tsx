@@ -32,6 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { redirect } from 'next/navigation';
 
 export type Summary = {
   id: number;
@@ -40,6 +41,7 @@ export type Summary = {
   name: string;
   status: "approved" | "rejected" | "assessmentsent" | "assessmentdone";
   email: string;
+  role_id: number;
 };
 
 export const columns: ColumnDef<Summary>[] = [
@@ -112,6 +114,7 @@ export const columns: ColumnDef<Summary>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const candidateid = row.original.id;
+      // const role_id = row.original.role_id 
 
       return (
         <DropdownMenu>
@@ -131,6 +134,10 @@ export const columns: ColumnDef<Summary>[] = [
               Profile View
             </DropdownMenuItem>
             <DropdownMenuItem
+            onClick={()=> {
+              redirect(`/assessment?role_id=${5}&profile_id=${21}`);
+            }}
+            
             >Send Assessment Link</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -72,7 +72,7 @@ const CandidateProfile: React.FC = () => {
       }
     }
     getuserdata();
-  }, []); 
+  }, [id]); 
 
   if (error) {
     return <div>Error: {error}</div>;
@@ -204,8 +204,11 @@ const CandidateProfile: React.FC = () => {
           </Button>
           <Button 
             className="bg-primary hover:bg-primary-dark"
+            onClick={() => {
+              // Implement the logic to send the assessment link
+            }}
           >
-            Schedule Interview
+            Send Assessment Link
           </Button>
         </div>
       </div>

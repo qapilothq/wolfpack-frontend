@@ -61,7 +61,7 @@ const Home: React.FC = () => {
               <Button 
                 size="lg" 
                 className="bg-primary hover:bg-primary-dark transition-colors duration-300 shadow-md"
-                onClick={() => window.location.href = '/login'}
+                onClick={() => window.location.href = '/JD-Create'}
               >
                 Get Started
               </Button>

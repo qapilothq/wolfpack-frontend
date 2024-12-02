@@ -48,7 +48,7 @@ import {
   
 const Combobox: React.FC<props> = ({ selectedValue, onSelect }) => {
     const [open, setOpen] = React.useState(false)
-    const [data, setData] = React.useState<JobData[]>([]); // Use the JobData interface
+    const [data, setData] = React.useState<JobData[]>([]); 
 
     useEffect(()=>{
       const fetchJD = async () =>{

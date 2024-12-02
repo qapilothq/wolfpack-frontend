@@ -74,7 +74,11 @@ const CandidateAssessment: React.FC = () => {
 
         const data = await questionsResponse.json();
         console.log(data);
-        setAssessmentQuestions(data.roleQuestions.map((question: string) => ({ question })));
+        const combinedQuestions = [
+          ...data.roleQuestions.map((question: string) => ({ question })),
+          ...data.profileQuestions.map((question: string) => ({ question }))
+        ];
+        setAssessmentQuestions(combinedQuestions);
       } catch (error) {
         console.error('Error fetching questions:', error);
         setError(error instanceof Error ? error.message : 'An unknown error occurred');
@@ -209,7 +213,7 @@ const CandidateAssessment: React.FC = () => {
               <ScrollArea className="h-[60vh] overflow-y-auto">
                 {assessmentQuestions.map((question, index) => (
                   <div key={index} className="mb-8">
-                    <Label className="text-lg font-semibold mb-4 text-gray-700">{question.question}</Label>
+                    <Label className="text-lg font-semibold mb-4 text-gray-700">{`${index + 1}. ${question.question}`}</Label>
                     <Textarea 
                       placeholder={`Your response (Max ${maxWords} words)`}
                       className={`mt-2 min-h-[200px] border ${
@@ -227,7 +231,7 @@ const CandidateAssessment: React.FC = () => {
                         (wordCounts[index] || 0) > maxWords 
                         ? 'text-red-500' 
                         : 'text-gray-500'
-                      }`}>
+                      }`}>  
                         Word Count: {wordCounts[index] || 0}/{maxWords}
                       </span>
                     </div>

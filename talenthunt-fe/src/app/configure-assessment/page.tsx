@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
   Select,
   SelectContent,
@@ -13,12 +13,17 @@ import { Input } from '@/components/ui/input';
 import { PlusIcon, TrashIcon } from 'lucide-react';
 
 // Define the roles as a JSON object with type annotations
-const roles: Record<string, string> = {
-  'Front-end Dev': "Responsible for implementing visual elements that users see and interact within a web application.",
-  'Back-end Dev': "Responsible for server-side web application logic and integration of the work front-end developers do.",
-  'Product Manager': "Responsible for guiding the success of a product and leading the cross-functional team that is responsible for improving it.",
-  'Project Manager': "Responsible for planning, executing, and overseeing the completion of projects to ensure that it is completed in line with the company's goals."
-};
+// const roles: Record<string, string> = {
+//   'Front-end Dev': "Responsible for implementing visual elements that users see and interact within a web application.",
+//   'Back-end Dev': "Responsible for server-side web application logic and integration of the work front-end developers do.",
+//   'Product Manager': "Responsible for guiding the success of a product and leading the cross-functional team that is responsible for improving it.",
+//   'Project Manager': "Responsible for planning, executing, and overseeing the completion of projects to ensure that it is completed in line with the company's goals."
+// };
+interface Role {
+  name: string;
+  id: string;
+  job_description: string;
+}
 
 const AIsuggested: string[] = [
   'What are the key responsibilities of a Front-end Developer?',
@@ -31,6 +36,41 @@ const AIsuggested: string[] = [
 const Assessment: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [questionsAdded, setQuestionsAdded] = useState<string[]>([]);
+  const [roles,setRoles] = useState<Role[]>([]);
+
+  useEffect(() => {
+    const getRoles = async () => {
+      try {
+        const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
+          },
+          body: JSON.stringify({
+            "requestType": "getRoles",
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        setRoles(data.map((role: Role) => ({
+          name: role.name,
+          id: role.id,
+          description:role.job_description
+        })));
+        console.log(data)
+        // console.log(roles)
+      } catch (error) {
+        console.error('Error fetching roles:', error);
+      }
+    };
+
+    getRoles();
+  }, []);
+  
 
   const addOrRemoveQuestion = (question: string) => {
     setQuestionsAdded(prev => 
@@ -50,32 +90,33 @@ const Assessment: React.FC = () => {
         </div>
 
         <div className='p-6'>
-          <div className='mb-6'>
+          <div>
+          <div className='mb-6 flex justify-between'>
             <Select onValueChange={(value: string) => setSelectedRole(value)}>
               <SelectTrigger className="w-full max-w-md">
                 <SelectValue placeholder="Choose the Role" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  {Object.keys(roles).map((roleName, index) => (
-                    <SelectItem
-                      key={index}
-                      value={roleName}
-                    >
-                      {roleName}
+                  {roles.map((role, index) => (
+                    <SelectItem key={index} value={role.id}>
+                      {role.name}
                     </SelectItem>
                   ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
-
-            {selectedRole && (
+            <Button disabled={questionsAdded.length===0}>Configure Assessment</Button>
+          </div>
+          {selectedRole && (
               <div className='mt-4 text-sm text-gray-600 bg-gray-50 p-4 rounded-lg'>
                 <span className='font-semibold text-gray-800'>Role Description: </span>
-                {roles[selectedRole]}
+                {roles.find(role => role.id === selectedRole)?.job_description}
               </div>
             )}
           </div>
+
+
 
           {selectedRole && (
             <div className='grid md:grid-cols-2 gap-6'>
@@ -177,7 +218,7 @@ const Leftpanel: React.FC<LeftpanelProps> = ({
   };
 
   return (
-    <div className='bg-gray-100 rounded-xl p-6 space-y-4'>
+    <div className='bg-gray-100 h-full rounded-xl p-6 space-y-4'>
       <div>
         <h2 className='font-bold text-xl text-gray-800 mb-4'>Added Questions</h2>
         {questionsAdded.length === 0 ? (
