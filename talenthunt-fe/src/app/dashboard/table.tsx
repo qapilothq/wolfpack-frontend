@@ -1,7 +1,6 @@
 "use client"
 
-import React, {useEffect} from 'react'
-import Link from 'next/link'
+import React, { useEffect, useState } from 'react';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,17 +12,17 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import {MoreHorizontal } from "lucide-react"
+} from "@tanstack/react-table";
+import { MoreHorizontal } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 
 import {
   Table,
@@ -32,68 +31,18 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 
-
-// const data: Summary[] = [
-//   {
-//     id: "m5gr84i9",
-//     name: "ABCDEFGHIJKLMNOP",
-//     score: 70,
-//     status: "approved",
-//     email: "ken99@yahoo.com",
-    
-//   },
-//   {
-//     id: "3u1reuv4",
-//     name: "ABCD",
-//     score: 75,
-//     status: "assessmentsent",
-//     email: "Abe45@gmail.com",
-//   },
-//   {
-//     id: "derv1ws0",
-//     name: "ABCD",
-//     score: 86,
-//     status: "assessmentdone",
-//     email: "Monserrat44@gmail.com",
-//     assessmentscore : 75
-//   },
-//   {
-//     id: "5kma53ae",
-//     name: "ABCD",
-//     score: 35,
-//     status: "rejected",
-//     email: "Silas22@gmail.com",
-//   },
-//   {
-//     id: "bhqecj4p",
-//     name: "ABCD",
-//     score: 90,
-//     status: "assessmentdone",
-//     email: "carmella@hotmail.com",
-//     assessmentscore : 75
-//   },
-// ]
-
-// export type Summary = {
-//   id: number
-//   score: number
-//   assessmentscore?: number
-//   name: string
-//   // status: "approved" | "rejected" | "assessmentsent" | "assessmentdone"
-//   email: string,
-// }
-type TableData = {
+export type Summary = {
   id: number;
-  name: string;
   score: number;
   assessmentscore?: number;
+  name: string;
+  status: "approved" | "rejected" | "assessmentsent" | "assessmentdone";
   email: string;
 };
 
-
-export const columns: ColumnDef<TableData>[] = [
+export const columns: ColumnDef<Summary>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -123,74 +72,46 @@ export const columns: ColumnDef<TableData>[] = [
       <div className="capitalize">{row.getValue("name")}</div>
     ),
   },
-//   {
-//     accessorKey: "email",
-//     header: ({ column }) => {
-//       return (
-//         <Button
-//           variant="ghost"
-//           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-//         >
-//           Email
-//           <ArrowUpDown />
-//         </Button>
-//       )
-//     },
-//     cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
-//   },
   {
     accessorKey: "score",
     header: () => <div className="">Profile Score</div>,
     cell: ({ row }) => {
-      const score = parseFloat(row.getValue("score"))
-
-      // Format the amount as a dollar amount
-
-      return <div className="font-medium">{score}</div>
+      const score = parseFloat(row.getValue("score"));
+      return <div className="font-medium">{score}</div>;
     },
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-        // const status = row.getValue("status")
-        const score = parseInt(row.getValue("score"))
-        let color: string = ""
-        let name : string = ""
-        if(score > 65){
-            name = "Eligible"
-            color = "text-[#36454F]"
-        }else{
-            name = "Not Eligible"
-            color = "text-[#FF0000]"
-        }
+      const score = parseInt(row.getValue("score"));
+      let color: string = "";
+      let name: string = "";
+      if (score > 65) {
+        name = "Eligible";
+        color = "text-[#36454F]";
+      } else {
+        name = "Not Eligible";
+        color = "text-[#FF0000]";
+      }
 
-      return <div className={`capitalize ${color}` } >{name}</div>
+      return <div className={`capitalize ${color}`}>{name}</div>;
     },
   },
-  
   {
     accessorKey: "assessmentscore",
     header: () => <div className="">Assessment score</div>,
     cell: ({ row }) => {
-      const finalscore = row.getValue("assessmentscore")
-      let sc: string = ""
-      // Format the amount as a dollar amount
-      if(finalscore){
-        sc = `${finalscore}`
-      }else{
-        sc = "--"
-      }
-
-      return <div className="font-medium">{sc}</div>
+      const finalscore = row.getValue("assessmentscore");
+      const sc: string = finalscore ? `${finalscore}` : "--";
+      return <div className="font-medium">{sc}</div>;
     },
   },
   {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      // const payment = row.original
-      const candidateid = row.getValue("id")
+      const candidateid = row.original.id;
 
       return (
         <DropdownMenu>
@@ -202,57 +123,65 @@ export const columns: ColumnDef<TableData>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
-            onClick={() => {
-                return <Link href={`/candidate?id=${candidateid}`}></Link>
-            }}
+              onClick={() => {
+                console.log("clicked");
+                window.location.href = '/candidate?id=' + candidateid;
+              }}
             >
-            Profile View</DropdownMenuItem>
-            <DropdownMenuItem>Send Assessment Link</DropdownMenuItem>
+              Profile View
+            </DropdownMenuItem>
+            <DropdownMenuItem
+            >Send Assessment Link</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];
 
-type props = {
-  roleid: string
-}
+type Props = {
+  roleid: string;
+};
 
-const DataTable: React.FC<props> = (roleid) => {
+const DataTable: React.FC<Props> = ({ roleid }) => {
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [data, setData] = useState<Summary[]>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState({});
 
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [data, setData] = React.useState([])
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+  useEffect(() => {
+    const fetchJD = async () => {
+      try {
+        const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
+          },
+          body: JSON.stringify({
+            "requestType": "getProfiles",
+            "role_id": roleid
+          }),
+        });
 
-  useEffect(()=>{
-    const fetchJD = async () =>{
-      const getdata = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
-        method: "POST",
-        headers: {
-          "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
-        },
-        body: JSON.stringify({
-          "requestType" : "getProfiles",
-          "role_id": roleid.roleid
-          }), 
-      });
-      if(getdata.ok){
-        const data = await getdata.json();
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
         setData(data);
         console.log(data);
-      }else{
-        console.log("Error")
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error("Error fetching data:", error.message);
+        } else {
+          console.error("Unexpected error:", error);
+        }
       }
-    }
+    };
 
     fetchJD();
-  }, [roleid])
+  }, [roleid]);
 
   const table = useReactTable({
     data,
@@ -271,30 +200,26 @@ const DataTable: React.FC<props> = (roleid) => {
       columnVisibility,
       rowSelection,
     },
-  })
+  });
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
-       
-      </div>
+      <div className="flex items-center py-4"></div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
@@ -353,7 +278,7 @@ const DataTable: React.FC<props> = (roleid) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default DataTable
+export default DataTable;
