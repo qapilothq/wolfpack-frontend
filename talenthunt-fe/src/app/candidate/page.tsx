@@ -1,7 +1,6 @@
 "use client"
 import React, { Suspense, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { 
   CodeIcon, 
   BookIcon, 
@@ -195,7 +194,7 @@ const CandidateProfile: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-center mt-8 space-x-4">
+        {/* <div className="flex justify-center mt-8 space-x-4">
           <Button 
             variant="outline" 
             className="hover:bg-gray-100"
@@ -210,7 +209,7 @@ const CandidateProfile: React.FC = () => {
           >
             Send Assessment Link
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

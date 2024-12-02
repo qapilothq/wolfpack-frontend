@@ -1,5 +1,5 @@
 'use client'
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Select,
   SelectContent,
@@ -10,36 +10,82 @@ import {
 } from "@/components/ui/select"
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PlusIcon, TrashIcon } from 'lucide-react';
+import { PlusIcon, TrashIcon, LoaderIcon } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast"
+import { useMemo } from 'react';
 
-// Define the roles as a JSON object with type annotations
-// const roles: Record<string, string> = {
-//   'Front-end Dev': "Responsible for implementing visual elements that users see and interact within a web application.",
-//   'Back-end Dev': "Responsible for server-side web application logic and integration of the work front-end developers do.",
-//   'Product Manager': "Responsible for guiding the success of a product and leading the cross-functional team that is responsible for improving it.",
-//   'Project Manager': "Responsible for planning, executing, and overseeing the completion of projects to ensure that it is completed in line with the company's goals."
-// };
+
 interface Role {
   name: string;
   id: string;
   job_description: string;
+  suggested_questions?: string[];
 }
 
-const AIsuggested: string[] = [
-  'What are the key responsibilities of a Front-end Developer?',
-  'Explain the concept of RESTful APIs and their importance in web development.',
-  'How do you prioritize tasks when managing a project with tight deadlines?',
-  'Describe a challenging situation you faced in a team project and how you handled it.',
-  'What strategies do you use to ensure effective communication within a cross-functional team?'
-];
-
 const Assessment: React.FC = () => {
+  const { toast } = useToast()
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [questionsAdded, setQuestionsAdded] = useState<string[]>([]);
-  const [roles,setRoles] = useState<Role[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [currentRoleDescription, setCurrentRoleDescription] = useState<string>('');
+  const [currentAISuggestions, setCurrentAISuggestions] = useState<string[]>([]);
+  
+  // New state for loading and error handling
+  const [isLoadingRoles, setIsLoadingRoles] = useState(true);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+  const [isConfiguring, setIsConfiguring] = useState(false);
+  const [rolesError, setRolesError] = useState<string | null>(null);
+  const [questionsError, setQuestionsError] = useState<string | null>(null);
+
+
+  const handleConfigureAssessment = async () => {
+    if (!selectedRole) {
+      toast({
+        title: "Error",
+        description: "Please select a role before configuring the assessment",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsConfiguring(true);
+    try {
+      const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
+        },
+        body: JSON.stringify({
+          "requestType": "createCustomQuestion",
+          "role_id": selectedRole,
+          "customQuestions": questionsAdded
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to configure assessment');
+      }
+
+      toast({
+        title: "Success",
+        description: "Assessment configured successfully",
+      });
+    } catch (error) {
+      console.error('Error configuring assessment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to configure assessment. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsConfiguring(false);
+    }
+  };
 
   useEffect(() => {
     const getRoles = async () => {
+      setIsLoadingRoles(true);
+      setRolesError(null);
       try {
         const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
           method: "POST",
@@ -52,25 +98,66 @@ const Assessment: React.FC = () => {
         });
 
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          throw new Error('Failed to fetch roles');
         }
 
         const data = await response.json();
-        setRoles(data.map((role: Role) => ({
+        const formattedRoles = data.map((role: Role) => ({
           name: role.name,
           id: role.id,
-          description:role.job_description
-        })));
-        console.log(data)
-        // console.log(roles)
+          job_description: role.job_description,
+          suggested_questions: role.suggested_questions || []
+        }));
+        setRoles(formattedRoles);
       } catch (error) {
         console.error('Error fetching roles:', error);
+        setRolesError('Failed to load roles. Please try again later.');
+      } finally {
+        setIsLoadingRoles(false);
       }
     };
 
     getRoles();
   }, []);
-  
+
+  const dummyQuestions = useMemo(() => [
+    'What are the key responsibilities of a Front-end Developer?',
+    'Explain the concept of RESTful APIs and their importance in web development.',
+    'How do you prioritize tasks when managing a project with tight deadlines?',
+    'Describe a challenging situation you faced in a team project and how you handled it.',
+    'What strategies do you use to ensure effective communication within a cross-functional team?'
+  ], []);
+
+  useEffect(() => {
+    const getAIQuestions = async () => {
+      if (selectedRole) {
+        setIsLoadingQuestions(true);
+        setQuestionsError(null);
+        try {
+          // Fetch logic here
+          setCurrentAISuggestions(dummyQuestions);
+        } catch (error) {
+          console.error('Error fetching AI questions:', error);
+          // Handle error
+        } finally {
+          setIsLoadingQuestions(false);
+        }
+      }
+    };
+
+    if (selectedRole) {
+      const currentRole = roles.find(role => role.id === selectedRole);
+      
+      // Update role description
+      setCurrentRoleDescription(currentRole?.job_description || '');
+      
+      // Fetch AI suggested questions
+      getAIQuestions();
+      
+      // Clear previously added questions
+      setQuestionsAdded([]);
+    }
+  }, [selectedRole, roles, dummyQuestions]);
 
   const addOrRemoveQuestion = (question: string) => {
     setQuestionsAdded(prev => 
@@ -79,6 +166,32 @@ const Assessment: React.FC = () => {
         : [...prev, question]
     );
   };
+
+  // Render loading state for roles
+  if (isLoadingRoles) {
+    return (
+      <div className='min-h-screen flex w-full items-center justify-center'>
+        <div className='flex items-center jusspace-x-2'>
+          <LoaderIcon className='animate-spin' />
+          <span>Loading roles...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Render error state for roles
+  if (rolesError) {
+    return (
+      <div className='min-h-screen flex items-center justify-center'>
+        <div className='text-center text-red-500 space-y-4'>
+          <p>{rolesError}</p>
+          <Button onClick={() => window.location.reload()}>
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='min-h-screen w-full bg-gray-50 p-8'>
@@ -91,42 +204,57 @@ const Assessment: React.FC = () => {
 
         <div className='p-6'>
           <div>
-          <div className='mb-6 flex justify-between'>
-            <Select onValueChange={(value: string) => setSelectedRole(value)}>
-              <SelectTrigger className="w-full max-w-md">
-                <SelectValue placeholder="Choose the Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {roles.map((role, index) => (
-                    <SelectItem key={index} value={role.id}>
-                      {role.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <Button disabled={questionsAdded.length===0}>Configure Assessment</Button>
-          </div>
-          {selectedRole && (
+            <div className='mb-6 flex justify-between'>
+              <Select onValueChange={(value: string) => setSelectedRole(value)}>
+                <SelectTrigger className="w-full max-w-md">
+                  <SelectValue placeholder="Choose the Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {roles.map((role) => (
+                      <SelectItem key={role.id} value={role.id}>
+                        {role.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <Button 
+                disabled={questionsAdded.length === 0 || isConfiguring} 
+                onClick={handleConfigureAssessment}
+              >
+                {isConfiguring ? (
+                  <>
+                    <LoaderIcon className='mr-2 animate-spin' />
+                    Configuring...
+                  </>
+                ) : (
+                  'Configure Assessment'
+                )}
+              </Button>
+            </div>
+            
+            {selectedRole && (
               <div className='mt-4 text-sm text-gray-600 bg-gray-50 p-4 rounded-lg'>
                 <span className='font-semibold text-gray-800'>Role Description: </span>
-                {roles.find(role => role.id === selectedRole)?.job_description}
+                {currentRoleDescription}
               </div>
             )}
           </div>
-
-
 
           {selectedRole && (
             <div className='grid md:grid-cols-2 gap-6'>
               <Leftpanel 
                 questionsAdded={questionsAdded} 
-                removeQuestion={addOrRemoveQuestion} 
+                removeQuestion={addOrRemoveQuestion}
+                addCustomQuestion={addOrRemoveQuestion}
               />
               <RightPanel 
                 questionsAdded={questionsAdded}
                 addOrRemoveQuestion={addOrRemoveQuestion}
+                aiSuggestions={currentAISuggestions}
+                isLoadingQuestions={isLoadingQuestions}
+                questionsError={questionsError}
               />
             </div>
           )}
@@ -139,18 +267,43 @@ const Assessment: React.FC = () => {
 interface RightPanelProps {
   questionsAdded: string[];
   addOrRemoveQuestion: (question: string) => void;
+  aiSuggestions: string[];
+  isLoadingQuestions: boolean;
+  questionsError: string | null;
 }
 
 const RightPanel: React.FC<RightPanelProps> = ({ 
   questionsAdded,
-  addOrRemoveQuestion 
+  addOrRemoveQuestion,
+  aiSuggestions,
+  isLoadingQuestions,
+  questionsError
 }) => {
+  if (isLoadingQuestions) {
+    return (
+      <div className='space-y-4 flex items-center justify-center'>
+        <div className='flex items-center space-x-2'>
+          <LoaderIcon className='animate-spin' />
+          <span>Loading suggested questions...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (questionsError) {
+    return (
+      <div className='space-y-4 text-center text-red-500'>
+        <p>{questionsError}</p>
+      </div>
+    );
+  }
+
   return(
     <div className='space-y-4'>
       <div>
         <h2 className='font-bold text-xl text-gray-800 mb-4'>AI Suggested Questions</h2>
         <div className='space-y-4'>
-          {AIsuggested.map((question) => (
+          {aiSuggestions.map((question) => (
             <QuestionCard 
               key={question} 
               question={question} 
@@ -163,6 +316,38 @@ const RightPanel: React.FC<RightPanelProps> = ({
     </div>
   )
 }
+
+// Rest of the component remains the same (QuestionCard and Leftpanel)
+
+interface RightPanelProps {
+  questionsAdded: string[];
+  addOrRemoveQuestion: (question: string) => void;
+  aiSuggestions: string[];
+}
+
+// const RightPanel: React.FC<RightPanelProps> = ({ 
+//   questionsAdded,
+//   addOrRemoveQuestion,
+//   aiSuggestions
+// }) => {
+//   return(
+//     <div className='space-y-4'>
+//       <div>
+//         <h2 className='font-bold text-xl text-gray-800 mb-4'>AI Suggested Questions</h2>
+//         <div className='space-y-4'>
+//           {aiSuggestions.map((question) => (
+//             <QuestionCard 
+//               key={question} 
+//               question={question} 
+//               onAddRemove={() => addOrRemoveQuestion(question)}
+//               isAdded={questionsAdded.includes(question)}
+//             />
+//           ))}
+//         </div>
+//       </div>
+//     </div>
+//   )
+// }
 
 interface QuestionCardProps {
   question: string;
@@ -202,17 +387,20 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 interface LeftpanelProps {
   questionsAdded: string[];
   removeQuestion: (question: string) => void;
+  addCustomQuestion: (question: string) => void;
 }
 
 const Leftpanel: React.FC<LeftpanelProps> = ({ 
   questionsAdded, 
-  removeQuestion 
+  removeQuestion,
+  addCustomQuestion
 }) => {
   const [newQuestion, setNewQuestion] = useState<string>('');
 
   const handleAddCustomQuestion = () => {
     if (newQuestion.trim()) {
-      removeQuestion(newQuestion);
+      // Add the custom question instead of removing it
+      addCustomQuestion(newQuestion);
       setNewQuestion('');
     }
   };
