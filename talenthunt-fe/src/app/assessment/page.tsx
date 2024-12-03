@@ -11,6 +11,10 @@ import { ScrollArea } from '@radix-ui/react-scroll-area';
 interface AssessmentQuestion {
   question: string;
 }
+interface AssessmentResponse {
+  question: string;
+  answer: string;
+}
 
 const CandidateAssessment: React.FC = () => {
   const searchParams = useSearchParams();
@@ -20,7 +24,7 @@ const CandidateAssessment: React.FC = () => {
   console.log('roleid', role_id);
 
   const [assessmentQuestions, setAssessmentQuestions] = useState<AssessmentQuestion[]>([]);
-  const [responses, setResponses] = useState<Record<number, string>>({});
+  const [responses, setResponses] = useState<AssessmentResponse[]>([]);
   const [wordCounts, setWordCounts] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -79,6 +83,12 @@ const CandidateAssessment: React.FC = () => {
           ...data.profileQuestions.map((question: string) => ({ question }))
         ];
         setAssessmentQuestions(combinedQuestions);
+        
+        // Initialize responses array with empty answers
+        setResponses(combinedQuestions.map(q => ({ 
+          question: q.question, 
+          answer: '' 
+        })));
       } catch (error) {
         console.error('Error fetching questions:', error);
         setError(error instanceof Error ? error.message : 'An unknown error occurred');
@@ -90,24 +100,39 @@ const CandidateAssessment: React.FC = () => {
     fetchQuestions();
   }, [role_id, profile_id]);
 
-  const handleResponseChange = (questionId: number, response: string) => {
+  const handleResponseChange = (index: number, response: string) => {
     const wordCount = response.trim().split(/\s+/).filter(word => word.length > 0).length;
 
-    setResponses(prev => ({
-      ...prev,
-      [questionId]: response
-    }));
+    // Update responses array
+    const newResponses = [...responses];
+    newResponses[index] = { 
+      question: assessmentQuestions[index].question, 
+      answer: response 
+    };
+    setResponses(newResponses);
 
+    // Update word counts
     setWordCounts(prev => ({
       ...prev,
-      [questionId]: wordCount
+      [index]: wordCount
     }));
   };
 
+  const handleCopyToClipboard = () => {
+    const url = window.location.href; // Get the current page URL
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        alert('Assessment URL copied to clipboard!');
+      })
+      .catch(err => {
+        console.error('Failed to copy URL: ', err);
+        alert('Failed to copy URL. Please try again.');
+      });
+  };
+
   const handleSubmit = async () => {
-    const allQuestionsAnswered = assessmentQuestions.every((q, index) => 
-      responses[index] && 
-      responses[index].trim().length > 0 && 
+    const allQuestionsAnswered = responses.every((response, index) => 
+      response.answer.trim().length > 0 && 
       (wordCounts[index] || 0) <= maxWords
     );
 
@@ -116,14 +141,14 @@ const CandidateAssessment: React.FC = () => {
         const submitResponse = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+            "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I`,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            "requestType": "submitAssessment",
+            "requestType": "saveAssessment",
+            "assessment": responses,
             "role_id": role_id,
-            "profile_id": profile_id,
-            "responses": responses
+            "profile_id": profile_id
           }),
         });
 
@@ -191,7 +216,6 @@ const CandidateAssessment: React.FC = () => {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-gray-100 pt-12">
       <div className="container mx-auto">
@@ -206,9 +230,10 @@ const CandidateAssessment: React.FC = () => {
           </Card>
         ) : (
           <Card className="w-full shadow-md">
-            <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-gray-800">Professional Assessment</CardTitle>
-            </CardHeader>
+            <div className='flex w-full justify-between p-5'>
+              <h1 className="text-2xl font-semibold text-gray-800">Professional Assessment</h1>
+              <Button onClick={handleCopyToClipboard}>Copy Assessment URL to clipboard</Button>
+            </div>
             <CardContent>
               <ScrollArea className="h-[60vh] overflow-y-auto">
                 {assessmentQuestions.map((question, index) => (
@@ -222,6 +247,7 @@ const CandidateAssessment: React.FC = () => {
                         : 'border-gray-300'
                       }`}
                       onChange={(e) => handleResponseChange(index, e.target.value)}
+                      value={responses[index]?.answer || ''}
                     />
                     <div className="flex items-center mt-2">
                       {(wordCounts[index] || 0) > maxWords && (

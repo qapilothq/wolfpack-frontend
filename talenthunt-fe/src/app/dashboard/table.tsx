@@ -148,9 +148,10 @@ export const columns: ColumnDef<Summary>[] = [
 
 type Props = {
   roleid: string;
+  refreshTrigger?: number; // Add optional refresh trigger prop
 };
 
-const DataTable: React.FC<Props> = ({ roleid }) => {
+const DataTable: React.FC<Props> = ({ roleid, refreshTrigger = 0 }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [data, setData] = useState<Summary[]>([]);
@@ -188,7 +189,7 @@ const DataTable: React.FC<Props> = ({ roleid }) => {
     };
 
     fetchJD();
-  }, [roleid]);
+  }, [roleid, refreshTrigger]); // Add refreshTrigger to dependency array
 
   const table = useReactTable({
     data,

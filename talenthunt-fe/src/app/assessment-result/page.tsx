@@ -1,19 +1,16 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useEffect, useState ,Suspense} from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2Icon, XCircleIcon, TargetIcon } from 'lucide-react';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
+import { useSearchParams } from 'next/navigation';
 
-interface Question {
-  id: number;
-  text: string;
-}
-
-interface CandidateResponse {
-  [questionId: number]: string;
-}
+// interface Question {
+//   question: string;
+//   answer: string;
+// }
 
 interface CandidateEvaluation {
   [questionId: number]: {
@@ -25,47 +22,40 @@ interface CandidateEvaluation {
 interface Candidate {
   name: string;
   email: string;
-  responses: CandidateResponse;
+  responses: Array<{
+    question: string;
+    answer: string;
+  }>;
 }
+// interface CanidateCardProps  {
+//   candidate: Candidate;
+// }
 
-const questions: Question[] = [
-  { id: 1, text: 'How do you create a state variable in React?' },
-  { id: 2, text: 'Write a function to reverse a string in JavaScript.' },
-  { id: 3, text: 'What is a Collection in programming?' },
-  { id: 4, text: 'Write a function to check if a number is prime.' }
-];
-
-const candidate: Candidate = {
-  name: 'Vinod G',
-  email: 'vinodgullipalli16@gmail.com',
-  responses: {
-    1: 'Create a new state variable',
-    2: 'function reverseString(str) {\n  return str.split("").reverse().join("");\n}',
-    3: 'Collection',
-    4: 'function isPrime(num) {\n  if (num <= 1) return false;\n  for (let i = 2; i <= Math.sqrt(num); i++) {\n    if (num % i === 0) return false;\n  }\n  return true;\n}'
-  }
-};
-
-const CandidateCard: React.FC = () => (
-  <Card className="hover:shadow-lg transition-shadow duration-300">
-    <CardHeader>
-      <div className="flex items-center">
-        <TargetIcon className="mr-2 text-blue-500" />
-        <CardTitle>Personal Information</CardTitle>
-      </div>
-    </CardHeader>
-    <CardContent>
-      <div className="space-y-2">
-        <p><strong>Name:</strong> {candidate.name}</p>
-        <p><strong>Email:</strong> {candidate.email}</p>
-      </div>
-    </CardContent>
-  </Card>
-);
+// const CandidateCard: React.FC<CanidateCardProps> = ({ candidate }) => (
+//   <Card className="hover:shadow-lg transition-shadow duration-300">
+//     <CardHeader>
+//       <div className="flex items-center">
+//         <TargetIcon className="mr-2 text-blue-500" />
+//         <CardTitle>Personal Information</CardTitle>
+//       </div>
+//     </CardHeader>
+//     <CardContent>
+//       <div className="space-y-2">
+//         <p><strong>Name:</strong> {candidate.name}</p>
+//         <p><strong>Email:</strong> {candidate.email}</p>
+//       </div>
+//     </CardContent>
+//   </Card>
+// );
 
 const AssessmentResults: React.FC = () => {
+  const [candidate, setCandidate] = useState<Candidate | null>(null);
   const [evaluations, setEvaluations] = useState<CandidateEvaluation>({});
   const [assessmentScore, setAssessmentScore] = useState<number | null>(null);
+  const searchParams = useSearchParams(); 
+
+  const role_id = searchParams.get('role_id');
+  const profile_id = searchParams.get('profile_id');
 
   const handleEvaluation = (questionId: number, isCorrect: boolean) => {
     const newEvaluations = {
@@ -80,25 +70,95 @@ const AssessmentResults: React.FC = () => {
     setEvaluations(newEvaluations);
 
     // Calculate score
-    const totalQuestions = questions.length;
+    const totalQuestions = candidate?.responses.length || 0;
     const correctAnswers = Object.values(newEvaluations).filter(evaluation => evaluation.correct).length;
-    const score = Math.round((correctAnswers / totalQuestions) * 100);
+    const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
     setAssessmentScore(score);
   };
 
+ useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const assessmentResponse = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
+          method: "POST",
+          headers: {
+            "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "requestType": "getAssessment",
+            "role_id": role_id,
+            "profile_id": profile_id
+          }),
+        });
+
+        if (!assessmentResponse.ok) {
+          throw new Error(`HTTP error! status: ${assessmentResponse.status}`);
+        }
+        const assessmentData = await assessmentResponse.json();
+
+        const profileResponse = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
+          method: "POST",
+          headers: {
+            "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "requestType": "getProfileSummary",
+            "profile_id": profile_id
+          }),
+        });
+
+        if (!profileResponse.ok) {
+          throw new Error(`HTTP error! status: ${profileResponse.status}`);
+        }
+        const profileData = await profileResponse.json();
+
+        const temp = profileData[0];
+        console.log(temp)
+        setCandidate({
+          name: temp.pi.Name,  
+          email: temp.pi.Email, 
+          responses: assessmentData.assessment
+        });
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, [role_id, profile_id]);
+
+  const handleSaveEvaluation  =()=>{
+    console.log(evaluations)
+    alert("Evaluation Saved")
+  }
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-gray-100 pt-12">
-
       <div className="flex flex-col gap-4 mx-10">
         <div className='flex justify-between items-center'>
-        <h1 className="text-xl font-semibold text-gray-800">Assessment Evaluation
-      </h1>
-      <CandidateCard />
+        <h1 className="text-xl font-semibold text-gray-800">Assessment Evaluation</h1>
+          <Card className="hover:shadow-lg transition-shadow duration-300">
+            <CardHeader>
+              <div className="flex items-center">
+                <TargetIcon className="mr-2 text-blue-500" />
+                <CardTitle>Personal Information</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <p><strong>Name:</strong> {candidate?.name}</p>
+                <p><strong>Email:</strong> {candidate?.email}</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
         <Card className="shadow-lg">
           <CardContent>
             <div className='pt-5'>
-              
+              <div className='flex justify-between items-center py-2'>
               {assessmentScore !== null && (
                 <div className="flex items-center mb-4">
                   <span className="text-lg font-semibold mr-2">Assessment Score:</span>
@@ -107,6 +167,9 @@ const AssessmentResults: React.FC = () => {
                   </span>
                 </div>
               )}
+                        <Button onClick={handleSaveEvaluation}>Save Evaluation</Button>
+              </div>
+
 
               <Tabs defaultValue="responses">
                 <TabsList className="grid w-full grid-cols-2 mb-4">
@@ -115,12 +178,12 @@ const AssessmentResults: React.FC = () => {
                 </TabsList>
                 <ScrollArea className="h-[50vh] overflow-y-auto">
                   <TabsContent value="responses">
-                    {questions.map((question) => (
-                      <Card key={question.id} className="mb-4 shadow-md">
+                    {candidate?.responses.map((response,index) => (
+                      <Card key={index} className="mb-4 shadow-md">
                         <CardContent className="p-4">
-                          <div className="mb-2 font-semibold text-gray-700">{question.text}</div>
+                          <div className="mb-2 font-semibold text-gray-700">{response.question}</div>
                           <pre className="whitespace-pre-wrap text-gray-700">
-                            {candidate.responses[question.id]}
+                            {response.answer}
                           </pre>
                         </CardContent>
                       </Card>
@@ -128,30 +191,30 @@ const AssessmentResults: React.FC = () => {
                   </TabsContent>
                   
                   <TabsContent value="evaluation">
-                    {questions.map((question) => (
-                      <Card key={question.id} className="mb-4 shadow-md">
+                    {candidate?.responses.map((response,index) => (
+                      <Card key={response.question} className="mb-4 shadow-md">
                         <CardContent className="p-4">
-                          <div className="mb-2 font-semibold text-gray-700">{question.text}</div>
+                          <div className="mb-2 font-semibold text-gray-700">{response.question}</div>
                           <pre className="whitespace-pre-wrap text-gray-700 mb-4">
-                            {candidate.responses[question.id]}
+                            {response.answer}
                           </pre>
                           <div className="flex items-center space-x-4">
                             <Button 
-                              variant={evaluations[question.id]?.correct === true ? 'default' : 'outline'}
-                              onClick={() => handleEvaluation(question.id, true)}
+                              variant={evaluations[index]?.correct === true ? 'default' : 'outline'}
+                              onClick={() => handleEvaluation(index, true)}
                             >
                               <CheckCircle2Icon className="mr-2 text-green-500" /> Correct
                             </Button>
                             <Button 
-                              variant={evaluations[question.id]?.correct === false ? 'default' : 'outline'}
-                              onClick={() => handleEvaluation(question.id, false)}
+                              variant={evaluations[index]?.correct === false ? 'default' : 'outline'}
+                              onClick={() => handleEvaluation(index, false)}
                             >
                               <XCircleIcon className="mr-2 text-red-500" /> Incorrect
                             </Button>
                           </div>
-                          {evaluations[question.id] && (
-                            <p className={`mt-2 ${evaluations[question.id].correct ? 'text-green-600' : 'text-red-600'}`}>
-                              {evaluations[question.id].explanation}
+                          {evaluations[index] && (
+                            <p className={`mt-2 ${evaluations[index].correct ? 'text-green-600' : 'text-red-600'}`}>
+                              {evaluations[index].explanation}
                             </p>
                           )}
                         </CardContent>
@@ -168,4 +231,10 @@ const AssessmentResults: React.FC = () => {
   );
 };
 
-export default AssessmentResults;
+const AssessmentResultsPage: React.FC = () => (
+  <Suspense fallback={<div>Loading...</div>}>
+    <AssessmentResults />
+  </Suspense>
+);
+
+export default AssessmentResultsPage;

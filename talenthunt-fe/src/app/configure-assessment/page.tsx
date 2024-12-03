@@ -56,15 +56,20 @@ const Assessment: React.FC = () => {
           "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
         },
         body: JSON.stringify({
-          "requestType": "createCustomQuestion",
+          "requestType": "createCustomQuestions",
           "role_id": selectedRole,
-          "customQuestions": questionsAdded
+          "questions": questionsAdded
         })
       });
+      console.log(response)
 
-      if (!response.ok) {
-        throw new Error('Failed to configure assessment');
-      }
+      alert('Assessment configured successfully');
+      setQuestionsAdded([]);
+      // const data = await response.json();
+      // console.log('Response:', data);
+      // if (!response.ok) {
+      //   throw new Error('Failed to configure assessment');
+      // }
 
       toast({
         title: "Success",
@@ -134,11 +139,11 @@ const Assessment: React.FC = () => {
         setIsLoadingQuestions(true);
         setQuestionsError(null);
         try {
-          // Fetch logic here
+
           setCurrentAISuggestions(dummyQuestions);
         } catch (error) {
           console.error('Error fetching AI questions:', error);
-          // Handle error
+
         } finally {
           setIsLoadingQuestions(false);
         }

@@ -3,7 +3,6 @@ import React, { useState } from 'react'
 import Combobox from './dropdown'
 import { FileUp } from 'lucide-react'
 import DataTable from './table'
-// import { Label } from '@/components/ui/label'
 import { useToast } from "@/hooks/use-toast"
 import { Button } from '@/components/ui/button'
 
@@ -11,12 +10,11 @@ const Index = () => {
   const { toast } = useToast()
   const [dropdownValue, setDropdownValue] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
-  // const [file, setFile] = useState<File | null>(null);
+  const [refreshTable, setRefreshTable] = useState(0); // New state to trigger table refresh
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      const newfile: File = event.target.files[0]; // Specify File type
-      // setFile(newfile);
+      const newfile: File = event.target.files[0];
       console.log("Selected File:", newfile);
       if (dropdownValue) {
         await uploadFile(newfile);
@@ -41,7 +39,7 @@ const Index = () => {
       });
   
       if (response.ok) {
-        const resp: { signedUrl: string; path: string; token: string } = await response.json(); // Specify response type
+        const resp: { signedUrl: string; path: string; token: string } = await response.json();
         console.log("Response:", resp);
         const { signedUrl, path, token } = resp;
         console.log("URL:", signedUrl);
@@ -73,6 +71,9 @@ const Index = () => {
   
             if (resumematch.ok) {
               console.log("Profile created successfully");
+              
+              // Trigger table refresh by incrementing the refreshTable state
+              setRefreshTable(prev => prev + 1);
             }
             const temp = dropdownValue
             setIsUploading(false);
@@ -130,17 +131,19 @@ const Index = () => {
             onChange={handleFileChange}
             disabled={!dropdownValue}
           />
-          <Button className=''
+          <Button 
             onClick={() => document.getElementById("resume")?.click()}
             disabled={!dropdownValue}
           >
             <FileUp /> {isUploading ? "Uploading..." : "Upload Resume"}
           </Button>
-          {/* {file && <Label className='mt-2'>{file.name}</Label>} */}
         </div>
         {dropdownValue && (
             <div className='max-w-4xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden'>
-              <DataTable roleid={dropdownValue} />
+              <DataTable 
+                roleid={dropdownValue} 
+                refreshTrigger={refreshTable} 
+              />
             </div>
           )}
       </div>
