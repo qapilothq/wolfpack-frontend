@@ -59,6 +59,8 @@ const AssessmentResults: React.FC = () => {
 
   const role_id = searchParams.get('role_id');
   const profile_id = searchParams.get('profile_id');
+  console.log('role_id', role_id);
+  console.log('profile_id', profile_id);
 
   const handleEvaluation = (questionId: number, isCorrect: boolean) => {
     const newEvaluations = {
@@ -94,27 +96,28 @@ const AssessmentResults: React.FC = () => {
             "profile_id": profile_id
           }),
         });
+        
 
         if (!assessmentResponse.ok) {
           throw new Error(`HTTP error! status: ${assessmentResponse.status}`);
         }
         const assessmentData = await assessmentResponse.json();
-
+        console.log('assessmentData', assessmentData);
+        console.log(profile_id)
         const profileResponse = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
           method: "POST",
           headers: {
-            "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
-            "Content-Type": "application/json"
+            "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
           },
           body: JSON.stringify({
-            "requestType": "getProfileSummary",
-            "profile_id": profile_id
-          }),
+            "requestType" : "getProfileSummary",
+            "profile_id": profile_id,
+          }), 
         });
 
-        if (!profileResponse.ok) {
-          throw new Error(`HTTP error! status: ${profileResponse.status}`);
-        }
+        // if (!profileResponse.ok) {
+        //   throw new Error(`HTTP error! status: ${profileResponse.status}`);
+        // }
         const profileData = await profileResponse.json();
 
         const temp = profileData[0];

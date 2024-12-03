@@ -39,7 +39,7 @@ const CandidateProfile: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams(); 
-  const profile_id = searchParams.get("id");
+  const profile_id = searchParams.get("profile_id");
   const role_id = searchParams.get("role_id");
 
 

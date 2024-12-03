@@ -45,29 +45,8 @@ export type Summary = {
   role_id: number;
 };
 
-export const columns: ColumnDef<Summary>[] = [
-  // {
-  //   id: "select",
-  //   header: ({ table }) => (
-  //     <Checkbox
-  //       checked={
-  //         table.getIsAllPageRowsSelected() ||
-  //         (table.getIsSomePageRowsSelected() && "indeterminate")
-  //       }
-  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-  //       aria-label="Select all"
-  //     />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <Checkbox
-  //       checked={row.getIsSelected()}
-  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
-  //       aria-label="Select row"
-  //     />
-  //   ),
-  //   enableSorting: false,
-  //   enableHiding: false,
-  // },
+// Function to create columns with role_id
+export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
   {
     accessorKey: "name",
     header: "Candidate Name",
@@ -115,7 +94,6 @@ export const columns: ColumnDef<Summary>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const candidateid = row.original.id;
-      const role_id = row.original.role_id;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -127,7 +105,7 @@ export const columns: ColumnDef<Summary>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuItem
               onClick={() => {
-                window.location.href = '/candidate?id=' + candidateid;
+                redirect(`/candidate?role_id=${role_id}&profile_id=${candidateid}`);
               }}
             >
               Profile View
@@ -153,7 +131,6 @@ type Props = {
   loading?: boolean;
   setLoading?: (loading: boolean) => void;
 };
-
 
 const DataTable: React.FC<Props> = ({ 
   loading,
@@ -203,7 +180,10 @@ const DataTable: React.FC<Props> = ({
 
   useEffect(() => {
     fetchJD();
-  }, [fetchJD,roleid, refreshTrigger]);
+  }, [fetchJD, roleid, refreshTrigger]);
+
+  // Create columns with the current roleid
+  const columns = createColumns(roleid);
 
   const table = useReactTable({
     data,
@@ -233,6 +213,8 @@ const DataTable: React.FC<Props> = ({
       </div>
     );
   }
+
+  // Rest of the component remains the same...
   return (
     <div className="w-full">
       <ScrollArea className="rounded-md border" style={{ maxHeight: '500px' }}>
