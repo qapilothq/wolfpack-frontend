@@ -39,7 +39,8 @@ const CandidateProfile: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams(); 
-  const id = searchParams.get("id");
+  const profile_id = searchParams.get("id");
+  const role_id = searchParams.get("role_id");
 
 
 
@@ -53,7 +54,7 @@ const CandidateProfile: React.FC = () => {
           },
           body: JSON.stringify({
             "requestType" : "getProfileSummary",
-            "profile_id": id
+            "profile_id": profile_id,
           }), 
         });
   
@@ -73,7 +74,7 @@ const CandidateProfile: React.FC = () => {
       }
     }
     getuserdata();
-  }, [id]); 
+  }, [profile_id]); 
 
   if (error) {
     return <div>Error: {error}</div>;
@@ -212,7 +213,7 @@ const CandidateProfile: React.FC = () => {
           </Button>
           <Button 
             className="bg-primary hover:bg-primary-dark"
-            onClick={()=> { redirect('assessment-result?role_id=5&profile_id=21')}}
+            onClick={()=> { redirect(`assessment-result?role_id=${role_id}&profile_id=${profile_id}`)}}
           >
             Evaluate Assessment
           </Button>

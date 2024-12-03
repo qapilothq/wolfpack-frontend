@@ -23,17 +23,21 @@ const CreateRoles: React.FC = () => {
     if (!currentRole.name.trim() || !currentRole.desc.trim()) {
       return; // Prevent adding empty roles
     }
-
+  
+    if (roles.length >= 5) {
+      alert("You can only add up to 5 roles.");
+      return; // Prevent adding more than 5 roles
+    }
+  
     if (editingIndex !== null) {
       const updatedRoles = [...roles];
       updatedRoles[editingIndex] = currentRole;
       setRoles(updatedRoles);
       setEditingIndex(null);
     } else {
-
       setRoles([...roles, currentRole]);
     }
-
+  
     setCurrentRole({ name: '', desc: '' });
   }
 
@@ -103,7 +107,10 @@ const CreateRoles: React.FC = () => {
           </div>
 
           <div className='space-y-4'>
-            <h2 className='font-bold text-xl text-gray-800 mb-4'>Added Roles</h2>
+            <div className='flex items-center gap-2'>
+            <h2 className='font-bold text-2xl text-gray-800'>Added Roles</h2>
+            <h2 className='text-sm text-gray-400'>(add upto 5 roles at a time)</h2>
+            </div>
             {roles.length === 0 ? (
               <div className='text-gray-500 italic text-center py-8 border-2 border-dashed border-gray-300 rounded-lg'>
                 No roles created yet

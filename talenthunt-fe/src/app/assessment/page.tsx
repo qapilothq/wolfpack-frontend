@@ -55,9 +55,11 @@ const CandidateAssessment: React.FC = () => {
           }),
         });
 
-        if (!createResponse.ok) {
-          throw new Error('Failed to create profile questions');
-        }
+        console.log('createResponse', createResponse);
+
+        // if (!createResponse.ok) {
+        //   throw new Error('Failed to create profile questions');
+        // }
 
         const questionsResponse = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
           method: "POST",
@@ -78,14 +80,15 @@ const CandidateAssessment: React.FC = () => {
 
         const data = await questionsResponse.json();
         console.log(data);
-        const combinedQuestions = data.customQuestions?.length > 0
-          ? data.customQuestions.map((question: string) => ({ question }))
-          : [
-              ...data.profileQuestions.map((question: string) => ({ question })),
-              ...data.roleQuestions.map((question: string) => ({ question }))
-            ];
-
-        setAssessmentQuestions(combinedQuestions);
+        const combinedQuestions = Array.isArray(data.customQuestions) && data.customQuestions.length > 0
+        ? data.customQuestions.map((question: string) => ({ question }))
+        : Array.isArray(data.roleQuestions) && data.roleQuestions.length > 0
+        ? data.roleQuestions.map((question: string) => ({ question }))
+        : Array.isArray(data.profileQuestions)
+        ? data.profileQuestions.map((question: string) => ({ question }))
+        : [];
+      
+      setAssessmentQuestions(combinedQuestions);
         
         // Initialize responses array with empty answers
         setResponses(combinedQuestions.map((q: AssessmentQuestion) => ({ 

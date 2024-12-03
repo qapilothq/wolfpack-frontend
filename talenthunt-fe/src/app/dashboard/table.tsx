@@ -90,12 +90,12 @@ export const columns: ColumnDef<Summary>[] = [
       const score = parseInt(row.getValue("score"));
       let color: string = "";
       let name: string = "";
-      if (score > 65) {
+      if (score > 40) {
         name = "Eligible";
-        color = "text-[#36454F]";
+        color = "text-green-400";
       } else {
         name = "Not Eligible";
-        color = "text-[#FF0000]";
+        color = "text-red-400";
       }
 
       return <div className={`capitalize ${color}`}>{name}</div>;
@@ -115,6 +115,7 @@ export const columns: ColumnDef<Summary>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const candidateid = row.original.id;
+      const role_id = row.original.role_id;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -133,7 +134,7 @@ export const columns: ColumnDef<Summary>[] = [
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                redirect(`/assessment?role_id=${5}&profile_id=${21}`);
+                redirect(`/assessment?role_id=${role_id}&profile_id=${candidateid}`);
               }}
             >
               Send Assessment Link
