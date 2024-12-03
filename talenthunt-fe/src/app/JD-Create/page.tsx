@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from '@/components/ui/input'
 import { Label } from "@/components/ui/label"
-import { PlusIcon, Layers, Save } from 'lucide-react'
+import { PlusIcon, Layers, Save, Edit2Icon } from 'lucide-react'
 import { X } from 'lucide-react'
 import { redirect } from 'next/navigation'
 
@@ -125,7 +125,7 @@ const CreateRoles: React.FC = () => {
                         size='icon'
                         onClick={() => editRole(index)}
                       >
-                        <PlusIcon className='h-4 w-4 text-blue-500' />
+                        <Edit2Icon className='h-4 w-4 text-blue-500' />
                       </Button>
                       <Button 
                         variant='ghost' 

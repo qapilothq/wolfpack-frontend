@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -16,7 +16,6 @@ import {
 import { MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,28 +46,28 @@ export type Summary = {
 };
 
 export const columns: ColumnDef<Summary>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+  // {
+  //   id: "select",
+  //   header: ({ table }) => (
+  //     <Checkbox
+  //       checked={
+  //         table.getIsAllPageRowsSelected() ||
+  //         (table.getIsSomePageRowsSelected() && "indeterminate")
+  //       }
+  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+  //       aria-label="Select all"
+  //     />
+  //   ),
+  //   cell: ({ row }) => (
+  //     <Checkbox
+  //       checked={row.getIsSelected()}
+  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
+  //       aria-label="Select row"
+  //     />
+  //   ),
+  //   enableSorting: false,
+  //   enableHiding: false,
+  // },
   {
     accessorKey: "name",
     header: "Candidate Name",
@@ -154,6 +153,7 @@ type Props = {
   setLoading?: (loading: boolean) => void;
 };
 
+
 const DataTable: React.FC<Props> = ({ 
   loading,
   setLoading,
@@ -171,37 +171,38 @@ const DataTable: React.FC<Props> = ({
     pageSize: pageSize,
   });
 
-  useEffect(() => {
-    const fetchJD = async () => {
-      if (setLoading) setLoading(true);
-  
-      try {
-        const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
-          method: "POST",
-          headers: {
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
-          },
-          body: JSON.stringify({
-            "requestType": "getProfiles",
-            "role_id": roleid
-          }),
-        });
-  
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status} ${response.statusText}`);
-        }
-  
-        const data = await response.json();
-        setData(data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        if (setLoading) setLoading(false);
+  // Use useCallback to memoize the fetch function
+  const fetchJD = useCallback(async () => {
+    if (setLoading) setLoading(true);
+
+    try {
+      const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
+        },
+        body: JSON.stringify({
+          "requestType": "getProfiles",
+          "role_id": roleid
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
-    };
-  
+
+      const data = await response.json();
+      setData(data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      if (setLoading) setLoading(false);
+    }
+  }, [roleid, setLoading]);
+
+  useEffect(() => {
     fetchJD();
-  }, [roleid, refreshTrigger]);
+  }, [fetchJD,roleid, refreshTrigger]);
 
   const table = useReactTable({
     data,
@@ -231,7 +232,6 @@ const DataTable: React.FC<Props> = ({
       </div>
     );
   }
-
   return (
     <div className="w-full">
       <ScrollArea className="rounded-md border" style={{ maxHeight: '500px' }}>
