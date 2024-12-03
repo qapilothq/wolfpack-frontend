@@ -111,19 +111,19 @@ const Index = () => {
   };
 
   return (
-    <div className='min-h-screen w-full bg-gray-50 p-8 flex flex-col items-center'>
-      <div className='w-[60vw] mx-auto bg-white shadow-xl rounded-2xl overflow-hidden'>
-        <div className='bg-gray-100 p-6 border-b border-gray-200 flex items-center'>
-          <h1 className='font-bold text-3xl text-gray-800'>
+    <div className='min-h-screen w-full bg-gray-50 p-4 md:p-8 flex flex-col items-center'>
+      <div className='w-full md:w-[60vw] mx-auto bg-white shadow-xl rounded-2xl overflow-hidden'>
+        <div className='bg-gray-100 p-4 md:p-6 border-b border-gray-200 flex items-center'>
+          <h1 className='font-bold text-2xl md:text-3xl text-gray-800'>
             Candidates Dashboard
           </h1>
         </div>
-        <div className='flex gap-2 items-center justify-between p-6'>
+        <div className='flex flex-col md:flex-row gap-2 items-center justify-between p-4 md:p-6'>
           <Combobox
             selectedValue={dropdownValue}
             onSelect={handleDropdownSelect}
           />
-
+  
           <input
             id="resume"
             type="file"
@@ -134,12 +134,13 @@ const Index = () => {
           <Button 
             onClick={() => document.getElementById("resume")?.click()}
             disabled={!dropdownValue}
+            className='mt-2 md:mt-0'
           >
             <FileUp /> {isUploading ? "Uploading..." : "Upload Resume"}
           </Button>
         </div>
         {dropdownValue && (
-            <div className='max-w-4xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden'>
+            <div className='max-w-full md:max-w-4xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden'>
               <DataTable 
                 roleid={dropdownValue} 
                 refreshTrigger={refreshTable} 

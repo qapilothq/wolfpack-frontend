@@ -8,7 +8,9 @@ import {
   TargetIcon 
 } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useSearchParams } from 'next/navigation';
+import { redirect, useSearchParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { LoaderIcon } from 'lucide-react';
 
 interface UserData {
   pi?: {
@@ -78,7 +80,14 @@ const CandidateProfile: React.FC = () => {
   }
 
   if (!userData) {
-    return <div>Loading...</div>;
+    return (
+      <div className='min-h-screen flex w-full items-center justify-center'>
+      <div className='flex items-center jusspace-x-2'>
+        <LoaderIcon className='animate-spin' />
+        <span>Loading</span>
+      </div>
+    </div>
+    );
   }
 
   const candidateData = {
@@ -94,9 +103,9 @@ const CandidateProfile: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 w-full flex flex-col p-8">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 w-full flex flex-col p-4 md:p-8">
       <div className="container mx-auto">
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
           {/* Personal Information Card */}
           <Card className="hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
@@ -113,7 +122,7 @@ const CandidateProfile: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-
+  
           {/* Work Experience Card */}
           <Card className="hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
@@ -134,7 +143,7 @@ const CandidateProfile: React.FC = () => {
               </CardContent>
             </ScrollArea>
           </Card>
-
+  
           {/* Education Card */}
           <Card className="hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
@@ -149,9 +158,9 @@ const CandidateProfile: React.FC = () => {
               </CardContent>
             </ScrollArea>
           </Card>
-
+  
           {/* Projects Card */}
-          <Card className="md:col-span-2 hover:shadow-lg transition-shadow duration-300">
+          <Card className="md:col-span-2 lg:col-span-1 hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <div className="flex items-center">
                 <CodeIcon className="mr-2 text-red-500" />
@@ -169,7 +178,7 @@ const CandidateProfile: React.FC = () => {
               </CardContent>
             </ScrollArea>
           </Card>
-
+  
           {/* Skills Card */}
           <Card className="hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
@@ -192,30 +201,27 @@ const CandidateProfile: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-
         {/* Action Buttons */}
-        {/* <div className="flex justify-center mt-8 space-x-4">
+        <div className="flex justify-center mt-8 space-x-4">
           <Button 
             variant="outline" 
             className="hover:bg-gray-100"
-          >
-            Download Resume
-          </Button>
-          <Button 
-            className="bg-primary hover:bg-primary-dark"
-            onClick={() => {
-              // Implement the logic to send the assessment link
-            }}
+            onClick={() => alert('Assessment Link Sent to the candidate!')}
           >
             Send Assessment Link
           </Button>
-        </div> */}
+          <Button 
+            className="bg-primary hover:bg-primary-dark"
+            onClick={()=> { redirect('assessment-result?role_id=5&profile_id=21')}}
+          >
+            Evaluate Assessment
+          </Button>
+        </div>
       </div>
     </div>
   );
 };
 
-// Wrap the component with Suspense
 const CandidateProfilePage: React.FC = () => (
   <Suspense fallback={<div>Loading...</div>}>
     <CandidateProfile />

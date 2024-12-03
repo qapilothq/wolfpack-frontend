@@ -78,14 +78,17 @@ const CandidateAssessment: React.FC = () => {
 
         const data = await questionsResponse.json();
         console.log(data);
-        const combinedQuestions = [
-          ...data.roleQuestions.map((question: string) => ({ question })),
-          ...data.profileQuestions.map((question: string) => ({ question }))
-        ];
+        const combinedQuestions = data.customQuestions?.length > 0
+          ? data.customQuestions.map((question: string) => ({ question }))
+          : [
+              ...data.profileQuestions.map((question: string) => ({ question })),
+              ...data.roleQuestions.map((question: string) => ({ question }))
+            ];
+
         setAssessmentQuestions(combinedQuestions);
         
         // Initialize responses array with empty answers
-        setResponses(combinedQuestions.map(q => ({ 
+        setResponses(combinedQuestions.map((q: AssessmentQuestion) => ({ 
           question: q.question, 
           answer: '' 
         })));
@@ -218,7 +221,7 @@ const CandidateAssessment: React.FC = () => {
   }
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-gray-100 pt-12">
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {assessmentQuestions.length === 0 ? (
           <Card className="w-full shadow-md">
             <CardHeader>
@@ -230,9 +233,9 @@ const CandidateAssessment: React.FC = () => {
           </Card>
         ) : (
           <Card className="w-full shadow-md">
-            <div className='flex w-full justify-between p-5'>
-              <h1 className="text-2xl font-semibold text-gray-800">Professional Assessment</h1>
-              <Button onClick={handleCopyToClipboard}>Copy Assessment URL to clipboard</Button>
+            <div className='flex flex-col sm:flex-row w-full justify-between p-5'>
+              <h1 className="text-2xl font-semibold text-gray-800 mb-4 sm:mb-0">Professional Assessment</h1>
+              <Button onClick={handleCopyToClipboard} className="w-full sm:w-auto">Copy Assessment URL to clipboard</Button>
             </div>
             <CardContent>
               <ScrollArea className="h-[60vh] overflow-y-auto">
@@ -266,7 +269,7 @@ const CandidateAssessment: React.FC = () => {
               </ScrollArea>
               <div className="flex justify-end mt-4">
                 <Button 
-                  className="text-white font-medium py-2 px-4 rounded"
+                  className="text-white font-medium py-2 px-4 rounded w-full sm:w-auto"
                   onClick={handleSubmit}
                 >
                   Submit Assessment

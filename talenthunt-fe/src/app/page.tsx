@@ -54,10 +54,12 @@ const Home: React.FC = () => {
               Welcome to Wolf-Pack! This platform is currently under active development. 
               Some features may be incomplete or subject to change. We appreciate your feedback 
               and understanding as we continue to improve our service.
+              <br />
+              Mail us at: <a href="mailto:aditya@qapilot.com" className="font-bold hover:underline">aditya@qapilot.com</a>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            {/* <AlertDialogCancel onClick={() => setIsDialogOpen(false)}>Close</AlertDialogCancel> */}
+
             <AlertDialogAction onClick={() => setIsDialogOpen(false)}>Continue</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

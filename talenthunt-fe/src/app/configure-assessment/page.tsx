@@ -139,8 +139,20 @@ const Assessment: React.FC = () => {
         setIsLoadingQuestions(true);
         setQuestionsError(null);
         try {
+          const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
+            method: "POST",
+            headers: {
+              "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
+            },
+            body: JSON.stringify({
+              "requestType": "getRoleQuestions",
+              "role_id": selectedRole,
+            }),
+          });
+          const data = await response.json();
+          console.log(data)
 
-          setCurrentAISuggestions(dummyQuestions);
+          setCurrentAISuggestions(data.questions);
         } catch (error) {
           console.error('Error fetching AI questions:', error);
 
@@ -206,10 +218,10 @@ const Assessment: React.FC = () => {
             Configure Assessment
           </h1>
         </div>
-
+  
         <div className='p-6'>
           <div>
-            <div className='mb-6 flex justify-between'>
+            <div className='mb-6 flex flex-col md:flex-row justify-between'>
               <Select onValueChange={(value: string) => setSelectedRole(value)}>
                 <SelectTrigger className="w-full max-w-md">
                   <SelectValue placeholder="Choose the Role" />
@@ -227,6 +239,7 @@ const Assessment: React.FC = () => {
               <Button 
                 disabled={questionsAdded.length === 0 || isConfiguring} 
                 onClick={handleConfigureAssessment}
+                className='mt-4 md:mt-0'
               >
                 {isConfiguring ? (
                   <>
@@ -246,9 +259,9 @@ const Assessment: React.FC = () => {
               </div>
             )}
           </div>
-
+  
           {selectedRole && (
-            <div className='grid md:grid-cols-2 gap-6'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <Leftpanel 
                 questionsAdded={questionsAdded} 
                 removeQuestion={addOrRemoveQuestion}
