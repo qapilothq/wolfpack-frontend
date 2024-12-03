@@ -1,7 +1,8 @@
 'use client'
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import Image from 'next/image';
 
 // Custom SVG Icons (unchanged)
@@ -36,21 +37,41 @@ const MagnifyingGlassIcon = () => (
   </svg>
 );
 
+
 const Home: React.FC = () => {
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+
+  useEffect(() => {
+    setIsDialogOpen(true);
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 w-full flex flex-col">
-      <main className="flex-grow container mx-auto px-4 py-16 grid md:grid-cols-2 gap-12 items-center">
-        <div className='flex w-[90vw] flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0 md:space-x-6'>
-          <div className='mb-6 flex flex-col items-center'>
-            <div 
-              className="w-[500px] h-[500px] bg-gray-200 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 flex items-center justify-center"
+      <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className='text-3xl'>Wolf-Pack: Trial Version</AlertDialogTitle>
+            <AlertDialogDescription className=''>
+              Welcome to Wolf-Pack! This platform is currently under active development. 
+              Some features may be incomplete or subject to change. We appreciate your feedback 
+              and understanding as we continue to improve our service.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            {/* <AlertDialogCancel onClick={() => setIsDialogOpen(false)}>Close</AlertDialogCancel> */}
+            <AlertDialogAction onClick={() => setIsDialogOpen(false)}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <main className="flex-grow container  py-16 grid md:grid-cols-2 gap-12 items-center">
+        <div className='flex lg:px-10 lg:w-[90vw] flex-col lg:flex-row items-center justify-center lg:justify-between lhspace-y-6 md:space-y-0 md:space-x-6'>
+        <div 
+              className=" md:mb-6 flex flex-col items-center justify-center w-[250px] h-250px  lg:w-[500px] lg:h-[500px] bg-gray-200 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
             >
               <Image src='/wolf-pack-logo.png' alt='Logo' width={500} height={500} />
             </div>
-          </div>
 
           <div className='text-center md:text-left'>
-            <h2 className="text-6xl text-gray-900 font-extrabold font-mono">Find Your Pack</h2>
+            <h2 className=" text-4xl lg:text-6xl text-gray-900 font-extrabold font-mono">Find Your Pack</h2>
             <div className='mt-10'>
             <h3 className="text-xl font-extrabold text-gray-900">Revolutionize Your Hiring Process</h3>
             <p className="text-lg text-gray-600 mb-8">
