@@ -10,7 +10,8 @@ const Index = () => {
   const { toast } = useToast()
   const [dropdownValue, setDropdownValue] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
-  const [refreshTable, setRefreshTable] = useState(0); // New state to trigger table refresh
+  const [refreshTable, setRefreshTable] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -26,6 +27,7 @@ const Index = () => {
 
   const uploadFile = async (file: File) => {
     setIsUploading(true)
+    setIsLoading(true);
     try {
       const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
         method: "POST",
@@ -72,13 +74,13 @@ const Index = () => {
             if (resumematch.ok) {
               console.log("Profile created successfully");
               
-              // Trigger table refresh by incrementing the refreshTable state
               setRefreshTable(prev => prev + 1);
+              setIsLoading(false); // Set loading to false after refresh
+
             }
-            const temp = dropdownValue
             setIsUploading(false);
-            setDropdownValue("");
-            setDropdownValue(temp);
+            
+            setDropdownValue(dropdownValue);
 
             toast({
               title: "File uploaded successfully!",
@@ -102,11 +104,14 @@ const Index = () => {
         variant: "destructive",
         title: "An error occurred while uploading the file.",
       });
+      setIsLoading(false); 
+
     }
   };
 
   const handleDropdownSelect = (value: string) => {
     setDropdownValue(value);
+    setIsLoading(true);
     console.log("Selected Dropdown Value:", value);
   };
 
@@ -133,17 +138,19 @@ const Index = () => {
           />
           <Button 
             onClick={() => document.getElementById("resume")?.click()}
-            disabled={!dropdownValue}
+            disabled={!dropdownValue || isLoading} 
             className='mt-2 md:mt-0'
           >
             <FileUp /> {isUploading ? "Uploading..." : "Upload Resume"}
           </Button>
         </div>
         {dropdownValue && (
-            <div className='max-w-full md:max-w-4xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden'>
+            <div className='max-w-full md:max-w-4xl mx-auto bg-white shadow-xl rounded-2xl'>
               <DataTable 
                 roleid={dropdownValue} 
                 refreshTrigger={refreshTable} 
+                loading={isLoading}
+                setLoading={setIsLoading}
               />
             </div>
           )}

@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -33,6 +33,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { redirect } from 'next/navigation';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Loader2 } from 'lucide-react';
 
 export type Summary = {
   id: number;
@@ -114,8 +116,6 @@ export const columns: ColumnDef<Summary>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const candidateid = row.original.id;
-      // const role_id = row.original.role_id 
-
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -127,18 +127,18 @@ export const columns: ColumnDef<Summary>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuItem
               onClick={() => {
-                console.log("clicked");
                 window.location.href = '/candidate?id=' + candidateid;
               }}
             >
               Profile View
             </DropdownMenuItem>
             <DropdownMenuItem
-            onClick={()=> {
-              redirect(`/assessment?role_id=${5}&profile_id=${21}`);
-            }}
-            
-            >Send Assessment Link</DropdownMenuItem>
+              onClick={() => {
+                redirect(`/assessment?role_id=${5}&profile_id=${21}`);
+              }}
+            >
+              Send Assessment Link
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -148,18 +148,33 @@ export const columns: ColumnDef<Summary>[] = [
 
 type Props = {
   roleid: string;
-  refreshTrigger?: number; // Add optional refresh trigger prop
+  refreshTrigger?: number;
+  pageSize?: number;
+  loading?: boolean;
+  setLoading?: (loading: boolean) => void;
 };
 
-const DataTable: React.FC<Props> = ({ roleid, refreshTrigger = 0 }) => {
+const DataTable: React.FC<Props> = ({ 
+  loading,
+  setLoading,
+  roleid, 
+  refreshTrigger = 0, 
+  pageSize = 10
+}) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [data, setData] = useState<Summary[]>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: pageSize,
+  });
 
   useEffect(() => {
     const fetchJD = async () => {
+      if (setLoading) setLoading(true);
+  
       try {
         const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
           method: "POST",
@@ -171,29 +186,34 @@ const DataTable: React.FC<Props> = ({ roleid, refreshTrigger = 0 }) => {
             "role_id": roleid
           }),
         });
-
+  
         if (!response.ok) {
           throw new Error(`Error: ${response.status} ${response.statusText}`);
         }
-
+  
         const data = await response.json();
         setData(data);
-        console.log(data);
       } catch (error) {
-        if (error instanceof Error) {
-          console.error("Error fetching data:", error.message);
-        } else {
-          console.error("Unexpected error:", error);
-        }
+        console.error("Error fetching data:", error);
+      } finally {
+        if (setLoading) setLoading(false);
       }
     };
-
+  
     fetchJD();
-  }, [roleid, refreshTrigger]); // Add refreshTrigger to dependency array
+  }, [roleid, refreshTrigger]);
 
   const table = useReactTable({
     data,
     columns,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+      pagination,
+    },
+    onPaginationChange: setPagination,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -202,86 +222,102 @@ const DataTable: React.FC<Props> = ({ roleid, refreshTrigger = 0 }) => {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
   });
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4"></div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
+      <ScrollArea className="rounded-md border" style={{ maxHeight: '500px' }}>
+        <div className="overflow-x-auto">
+          <Table className="w-full">
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead 
+                      key={header.id} 
+                      className='text-black sticky top-0 bg-white z-10 text-xs sm:text-sm'
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="text-xs sm:text-sm"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="p-2 sm:p-4">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </ScrollArea>
+      
+      <div className="flex flex-col md:flex-row items-center justify-between space-y-2 md:space-y-0 md:space-x-2 py-4 px-2">
+        <div className="text-xs sm:text-sm text-muted-foreground text-center w-full md:text-left md:w-auto">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
-        <div className="space-x-2">
+        <div className="flex items-center justify-center space-x-2 w-full md:w-auto">
           <Button
             variant="outline"
             size="sm"
+            className="p-2"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">Previous</span>
           </Button>
+          <span className="text-xs sm:text-sm">
+            Page {table.getState().pagination.pageIndex + 1} of{" "}
+            {table.getPageCount()}
+          </span>
           <Button
             variant="outline"
             size="sm"
+            className="p-2"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            <ChevronRight className="h-4 w-4" />
+            <span className="sr-only">Next</span>
           </Button>
         </div>
       </div>
