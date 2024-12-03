@@ -64,10 +64,10 @@ const Home: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <main className="flex-grow container  py-16 grid md:grid-cols-2 gap-12 items-center">
-        <div className='flex lg:px-10 lg:w-[90vw] flex-col lg:flex-row items-center justify-center lg:justify-between lhspace-y-6 md:space-y-0 md:space-x-6'>
+      <main className="flex-grow container  py-16 grid  gap-12 items-center">
+        <div className='flex lg:px-10 w-[100vw] flex-col lg:flex-row items-center lg:space-y-6 md:space-y-0 md:space-x-6'>
         <div 
-              className=" md:mb-6 flex flex-col items-center justify-center w-[250px] h-250px  lg:w-[500px] lg:h-[500px] bg-gray-200 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
+              className=" md:mb-6 flex flex-col items-center justify-center w-[250px] h-[250px]  md:w-[500px] md:h-[500px] bg-gray-200 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
             >
               <Image src='/wolf-pack-logo.png' alt='Logo' width={500} height={500} />
             </div>
