@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,13 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const { setIsLoggedIn } = useStore();
+  const { isLoggedIn, setIsLoggedIn } = useStore();
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      router.push("/dashboard");
+    }
+  }, [isLoggedIn, router]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
