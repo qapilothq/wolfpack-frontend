@@ -46,19 +46,20 @@ const Navbar: React.FC = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            {links.map((link) => (
-              <Link
-                key={link.link}
-                href={link.link}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${
-                  pathname === link.link
-                    ? "bg-gray-700 text-white"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
-                }`}
-              >
-                {link.title}
-              </Link>
-            ))}
+            {isLoggedIn &&
+              links.map((link) => (
+                <Link
+                  key={link.link}
+                  href={link.link}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${
+                    pathname === link.link
+                      ? "bg-gray-700 text-white"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+                  }`}
+                >
+                  {link.title}
+                </Link>
+              ))}
 
             {isLoggedIn && (
               <Button
@@ -98,20 +99,21 @@ const Navbar: React.FC = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden bg-white shadow-lg">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {links.map((link) => (
-                <Link
-                  key={link.link}
-                  href={link.link}
-                  onClick={toggleMobileMenu}
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    pathname === link.link
-                      ? "bg-gray-700 text-white"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
-                  }`}
-                >
-                  {link.title}
-                </Link>
-              ))}
+              {isLoggedIn &&
+                links.map((link) => (
+                  <Link
+                    key={link.link}
+                    href={link.link}
+                    onClick={toggleMobileMenu}
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      pathname === link.link
+                        ? "bg-gray-700 text-white"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+                    }`}
+                  >
+                    {link.title}
+                  </Link>
+                ))}
             </div>
           </div>
         )}
