@@ -66,12 +66,13 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
     cell: ({ row }) => {
       const score = parseInt(row.getValue("score"));
       let color: string = "";
-      let name: string = "";
+      const status = row.getValue("status")
+      let name: string = status === 'accepted' && !score ? "Processing" : score > 40 ? "Eligible" : "Not Eligible";
       if (score > 40) {
-        name = "Eligible";
+        // name = "Eligible";
         color = "text-green-400";
       } else {
-        name = "Not Eligible";
+        // name = "Not Eligible";
         color = "text-red-400";
       }
 

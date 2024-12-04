@@ -1,6 +1,6 @@
 "use client";
 import React, { Suspense, useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { CodeIcon, BookIcon, BriefcaseIcon, TargetIcon, FlagIcon, SparkleIcon, KanbanIcon } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { redirect, useSearchParams } from "next/navigation";
@@ -182,13 +182,7 @@ const CandidateProfile: React.FC = () => {
           </Card>
 
           {/* Profile Score Card*/}
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            {/* <CardHeader>
-              <div className="flex items-center">
-                <BriefcaseIcon className="mr-2 text-green-500" />
-                <CardTitle>Work Experience</CardTitle>
-              </div>
-            </CardHeader> */}
+          <Card className="hover:shadow-lg transition-shadow duration-300 flex flex-col">
               <CardContent>
                 <ChartContainer
                   config={profileScoreChartConfig}
@@ -197,7 +191,7 @@ const CandidateProfile: React.FC = () => {
                   <RadialBarChart
                     data={[{score : getProf?.score, fill: "var(--color-score)"}]}
                     startAngle={0}
-                    endAngle={200}
+                    endAngle={((getProf?.score ?? 0) / 100) * 360}
                     innerRadius={80}
                     outerRadius={110}
                   >
@@ -243,6 +237,11 @@ const CandidateProfile: React.FC = () => {
                   </RadialBarChart>
                 </ChartContainer>
               </CardContent>
+              <CardFooter className="flex-col gap-2 text-sm">
+                <div className="leading-none text-muted-foreground">
+                  Profile matched with the role - {roleName}
+                </div>
+              </CardFooter>
           </Card>
 
           {/* Assessment Score Card */}
@@ -261,7 +260,7 @@ const CandidateProfile: React.FC = () => {
                   <RadialBarChart
                     data={[{score : getProf?.assessment_score ?? 0, fill: "var(--color-score)"}]}
                     startAngle={0}
-                    endAngle={100}
+                    endAngle={((getProf?.assessment_score ?? 0) / 100) * 360}
                     innerRadius={80}
                     outerRadius={110}
                   >
@@ -438,30 +437,30 @@ const CandidateProfile: React.FC = () => {
               <CardContent>
                 {getProf?.red_flags?.high && getProf?.red_flags?.high?.length > 1 &&
                   <div key="1" className="mb-4">
-                    <p className="font-semibold">High</p>
+                    {/* <p className="font-semibold">High</p> */}
                     {getProf?.red_flags.high.map((value: any, index: any) => (
                       <p key={index} className="text-gray-600">
-                        {value}
+                        {value} - (High)
                       </p>
                     ))}
                   </div>
                 }
                 {getProf?.red_flags?.medium && getProf?.red_flags?.medium?.length > 1 &&
                   <div key="2" className="mb-4">
-                    <p className="font-semibold">Medium</p>
+                    {/* <p className="font-semibold">Medium</p> */}
                     {getProf?.red_flags?.medium.map((value: any, index: any) => (
                       <p key={index} className="text-gray-600">
-                        {value}
+                        {value} - (Medium)
                       </p>
                     ))}
                   </div>
                 }
                 {getProf?.red_flags?.low && getProf?.red_flags?.low?.length > 1 &&
                   <div key="3" className="mb-4">
-                    <p className="font-semibold">Low</p>
+                    {/* <p className="font-semibold">Low</p> */}
                     {getProf?.red_flags?.low.map((value: any, index: any) => (
                       <p key={index} className="text-gray-600">
-                        {value}
+                        {value} - (Low)
                       </p>
                     ))}
                   </div>
