@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -31,9 +31,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { redirect } from 'next/navigation';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2 } from 'lucide-react';
+import { redirect } from "next/navigation";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Loader2 } from "lucide-react";
 
 export type Summary = {
   id: number;
@@ -50,9 +50,7 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
   {
     accessorKey: "name",
     header: "Candidate Name",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("name")}</div>
-    ),
+    cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
   },
   {
     accessorKey: "score",
@@ -105,14 +103,18 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
           <DropdownMenuContent align="end">
             <DropdownMenuItem
               onClick={() => {
-                redirect(`/candidate?role_id=${role_id}&profile_id=${candidateid}`);
+                redirect(
+                  `/candidate?role_id=${role_id}&profile_id=${candidateid}`
+                );
               }}
             >
               Profile View
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                redirect(`/assessment?role_id=${role_id}&profile_id=${candidateid}`);
+                redirect(
+                  `/assessment?role_id=${role_id}&profile_id=${candidateid}`
+                );
               }}
             >
               Send Assessment Link
@@ -132,12 +134,12 @@ type Props = {
   setLoading?: (loading: boolean) => void;
 };
 
-const DataTable: React.FC<Props> = ({ 
+const DataTable: React.FC<Props> = ({
   loading,
   setLoading,
-  roleid, 
-  refreshTrigger = 0, 
-  pageSize = 10
+  roleid,
+  refreshTrigger = 0,
+  pageSize = 10,
 }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -154,22 +156,27 @@ const DataTable: React.FC<Props> = ({
     if (setLoading) setLoading(true);
 
     try {
-      const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
-        },
-        body: JSON.stringify({
-          "requestType": "getProfiles",
-          "role_id": roleid
-        }),
-      });
+      const response = await fetch(
+        "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
+        {
+          method: "POST",
+          headers: {
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
+          },
+          body: JSON.stringify({
+            requestType: "getProfiles",
+            role_id: roleid,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
+      console.log(data);
       setData(data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -217,16 +224,16 @@ const DataTable: React.FC<Props> = ({
   // Rest of the component remains the same...
   return (
     <div className="w-full">
-      <ScrollArea className="rounded-md border" style={{ maxHeight: '500px' }}>
+      <ScrollArea className="rounded-md border" style={{ maxHeight: "500px" }}>
         <div className="overflow-x-auto">
           <Table className="w-full">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead 
-                      key={header.id} 
-                      className='text-black sticky top-0 bg-white z-10 text-xs sm:text-sm'
+                    <TableHead
+                      key={header.id}
+                      className="text-black sticky top-0 bg-white z-10 text-xs sm:text-sm"
                     >
                       {header.isPlaceholder
                         ? null
@@ -271,7 +278,7 @@ const DataTable: React.FC<Props> = ({
           </Table>
         </div>
       </ScrollArea>
-      
+
       <div className="flex flex-col md:flex-row items-center justify-between space-y-2 md:space-y-0 md:space-x-2 py-4 px-2">
         <div className="text-xs sm:text-sm text-muted-foreground text-center w-full md:text-left md:w-auto">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}

@@ -1,56 +1,61 @@
-'use client'
-import React, { useState } from 'react'
-import Link from 'next/link'
-import { Menu } from 'lucide-react'
-import { usePathname } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import Image from 'next/image'
+"use client";
+import React, { useState } from "react";
+import Link from "next/link";
+import { Menu } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 const links = [
-  { title: 'Create Role', link: '/JD-Create' },
-  { title: 'Configure Assessment', link: '/configure-assessment' },
-  { title: 'Candidates Dashboard', link: '/dashboard' },
-]
+  { title: "Create Role", link: "/create-role" },
+  { title: "Candidates Dashboard", link: "/dashboard" },
+];
 
 const Navbar: React.FC = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const pathname = usePathname()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen)
-  }
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
 
   return (
-    <nav className='sticky top-0 z-50 bg-white shadow-md'>
-      <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8'>
-        <div className='flex justify-between items-center'>
+    <nav className="sticky top-0 z-50 bg-white shadow-md">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center">
           {/* Logo Section */}
-          <div className='flex gap-2 items-center'>
-          <Link href="/" className='flex items-center'>
-          <Image src='/wolf-pack-logo.png' alt='Logo' width={80} height={50} />
-            {/* <span className='font-bold text-2xl text-gray-800'>Wolf-Pack</span> */}
-            <h2 className="text-xl text-gray-900 ml-2 font-mono"> Wolf-Pack </h2>
-          </Link>
-          
+          <div className="flex gap-2 items-center">
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/wolf-pack-logo.png"
+                alt="Logo"
+                width={80}
+                height={50}
+              />
+              {/* <span className='font-bold text-2xl text-gray-800'>Wolf-Pack</span> */}
+              <h2 className="text-xl text-gray-900 ml-2 font-mono">
+                {" "}
+                Wolf-Pack{" "}
+              </h2>
+            </Link>
           </div>
 
-
           {/* Desktop Navigation */}
-          <div className='hidden md:flex items-center space-x-4'>
+          <div className="hidden md:flex items-center space-x-4">
             {links.map((link) => (
-              <Link 
-                key={link.link} 
-                href={link.link} 
+              <Link
+                key={link.link}
+                href={link.link}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${
-                  pathname === link.link 
-                    ? 'bg-gray-700 text-white' 
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                  pathname === link.link
+                    ? "bg-gray-700 text-white"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
                 }`}
               >
                 {link.title}
               </Link>
             ))}
-            
+
             {/* Search and Action Buttons */}
             {/* <div className='flex items-center space-x-2'>
               <Button variant="ghost" size="icon" className='text-gray-600 hover:text-gray-800'>
@@ -60,31 +65,31 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className='md:hidden'>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={toggleMobileMenu}
-              className='text-gray-600 hover:text-gray-800'
+              className="text-gray-600 hover:text-gray-800"
             >
-              <Menu className='h-6 w-6' />
+              <Menu className="h-6 w-6" />
             </Button>
           </div>
         </div>
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className='md:hidden bg-white shadow-lg'>
-            <div className='px-2 pt-2 pb-3 space-y-1'>
+          <div className="md:hidden bg-white shadow-lg">
+            <div className="px-2 pt-2 pb-3 space-y-1">
               {links.map((link) => (
-                <Link 
-                  key={link.link} 
-                  href={link.link} 
+                <Link
+                  key={link.link}
+                  href={link.link}
                   onClick={toggleMobileMenu}
                   className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    pathname === link.link 
-                      ? 'bg-gray-700 text-white' 
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                    pathname === link.link
+                      ? "bg-gray-700 text-white"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
                   }`}
                 >
                   {link.title}
@@ -95,10 +100,10 @@ const Navbar: React.FC = () => {
         )}
       </div>
     </nav>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;
 // "use client"
 // import React from 'react'
 // import Link from 'next/link'
@@ -118,7 +123,7 @@ export default Navbar
 //     'link':'/assessment'
 //   }
 // ]
- 
+
 // const Navbar = () => {
 //   const [state, setState] = React.useState(false)
 //   const pathname = usePathname()
@@ -130,7 +135,7 @@ export default Navbar
 //             <h1 className="text-3xl font-bold pl-5 text-white">Wolf-Pack</h1>
 //           </Link>
 //           <div className="md:hidden">
-//             <button 
+//             <button
 //               className="text-gray-700 outline-none bg-white p-2 rounded-md focus:border-gray-400 focus:border"
 //               onClick={() => setState(!state)}
 
@@ -158,9 +163,8 @@ export default Navbar
 //     </nav>
 //   )
 // }
- 
-// export default Navbar
 
+// export default Navbar
 
 // 'use client'
 // import React from 'react'
@@ -208,4 +212,3 @@ export default Navbar
 // }
 
 // export default Navbar
-
