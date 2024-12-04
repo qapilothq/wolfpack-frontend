@@ -6,6 +6,7 @@ import DataTable from "./table";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { redirect } from "next/navigation";
+import AuthGuard from "../custom-components/Authguard";
 
 const Index = () => {
   const { toast } = useToast();
@@ -182,4 +183,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default AuthGuard(Index);

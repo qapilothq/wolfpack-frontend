@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { PlusIcon, Layers, Save, Edit2Icon } from "lucide-react";
 import { X } from "lucide-react";
 import { redirect } from "next/navigation";
+import AuthGuard from "../custom-components/Authguard";
 
 interface Role {
   name: string;
@@ -226,4 +227,4 @@ const AddRoleForm: React.FC<AddRoleFormProps> = ({
   );
 };
 
-export default CreateRoles;
+export default AuthGuard(CreateRoles);

@@ -89,7 +89,7 @@ const Home: React.FC = () => {
     setIsDialogOpen(true);
   }, []);
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 w-full flex flex-col">
+    <div className="min-h-screen bg-gray-100 w-full flex flex-col">
       <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -120,12 +120,12 @@ const Home: React.FC = () => {
       </AlertDialog>
       <main className="flex-grow container  py-16 grid  gap-12 items-center">
         <div className="flex lg:px-10 w-[100vw] flex-col lg:flex-row items-center lg:space-y-6 md:space-y-0 md:space-x-6">
-          <div className=" md:mb-6 flex flex-col items-center justify-center w-[250px] h-[250px]  md:w-[500px] md:h-[500px] bg-gray-200 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
+          <div className=" md:mb-3 flex flex-col items-center justify-center w-[250px] h-[250px]  md:w-[400px] md:h-[400px] bg-gray-200 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
             <Image
               src="/wolf-pack-logo.png"
               alt="Logo"
-              width={500}
-              height={500}
+              width={400}
+              height={400}
             />
           </div>
 
@@ -200,7 +200,6 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
-
       <section className="bg-gray-50 py-16">
         <div className="container mx-auto text-center">
           <h3 className="text-3xl font-bold mb-12 text-gray-900">
