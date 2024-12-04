@@ -1,23 +1,29 @@
-import React, { useEffect } from "react";
-import { useRouter } from "next/router";
-// import { redirect } from "next/dist/server/api-utils";
+import React, { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
 
-const isAuthenticated = () => {
-  return !!localStorage.getItem("logtoken");
-};
+const AuthGuard = <P extends object>(
+  WrappedComponent: React.ComponentType<P>
+) => {
+  const ComponentWithAuth = (props: P) => {
+    const [isAuth, setIsAuth] = useState(false);
 
-const AuthGuard = (WrappedComponent: React.ComponentType) => {
-  const ComponentWithAuth = (props: any) => {
     useEffect(() => {
-      if (!isAuthenticated()) {
-        const logToken = localStorage.getItem("logtoken");
-        console.log("Log token:", logToken);
-        redirect("/login");
-      }
+      const checkAuth = () => {
+        if (typeof window !== "undefined") {
+          const logToken = localStorage.getItem("logtoken");
+          console.log("Log token:", logToken);
+          if (!logToken) {
+            redirect("/login");
+          } else {
+            setIsAuth(true);
+          }
+        }
+      };
+
+      checkAuth();
     }, []);
 
-    return isAuthenticated() ? <WrappedComponent {...props} /> : null;
+    return isAuth ? <WrappedComponent {...props} /> : null;
   };
 
   return ComponentWithAuth;

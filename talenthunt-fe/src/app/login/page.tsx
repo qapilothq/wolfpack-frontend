@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -43,7 +43,7 @@ const Login: React.FC = () => {
       const data = await response.json();
       localStorage.setItem("logtoken", data.token);
       console.log("Login successful:", data);
-      router.push("/dashbaord");
+      router.push("/dashboard");
       // Handle successful login (e.g., redirect, store token, etc.)
     } catch (error) {
       setError((error as Error).message);
@@ -142,17 +142,6 @@ const Login: React.FC = () => {
                 {error && (
                   <div className="mt-4 text-red-600 text-center">{error}</div>
                 )}
-                <div className="mt-4 md:mt-6 text-center">
-                  <p className="text-xs md:text-sm text-gray-600">
-                    Don't have an account?{" "}
-                    <a
-                      href="/signup"
-                      className="text-primary font-semibold hover:underline"
-                    >
-                      Sign Up
-                    </a>
-                  </p>
-                </div>
               </CardContent>
             </Card>
           </div>
