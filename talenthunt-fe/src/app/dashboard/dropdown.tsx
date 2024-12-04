@@ -64,6 +64,7 @@ const Combobox: React.FC<props> = ({ selectedValue, onSelect }) => {
         if(resumematch.ok){
           const data = await resumematch.json();
           setData(data);
+          sessionStorage.setItem("ROLES", JSON.stringify(data));
           console.log(data);
         }else{
           console.log("Error")
