@@ -66,8 +66,13 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
     cell: ({ row }) => {
       const score = parseInt(row.getValue("score"));
       let color: string = "";
-      const status = row.getValue("status")
-      let name: string = status === 'accepted' && !score ? "Processing" : score > 40 ? "Eligible" : "Not Eligible";
+      const status = row.getValue("status");
+      const name: string =
+        status === "accepted" && !score
+          ? "Processing"
+          : score > 40
+          ? "Eligible"
+          : "Not Eligible";
       if (score > 40) {
         // name = "Eligible";
         color = "text-green-400";
@@ -106,7 +111,10 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
           <DropdownMenuContent align="end">
             <DropdownMenuItem
               onClick={() => {
-                sessionStorage.setItem("USER_PROF", JSON.stringify(row.original));
+                sessionStorage.setItem(
+                  "USER_PROF",
+                  JSON.stringify(row.original)
+                );
                 redirect(
                   `/candidate?role_id=${role_id}&profile_id=${candidateid}`
                 );
