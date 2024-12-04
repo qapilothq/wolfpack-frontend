@@ -84,14 +84,20 @@ const Navbar: React.FC = () => {
                 <LogOut className="h-5 w-5" />
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleMobileMenu}
-              className="text-gray-600 hover:text-gray-800"
-            >
-              <Menu className="h-6 w-6" />
-            </Button>
+            {isLoggedIn ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleMobileMenu}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                <Menu className="h-6 w-6" />
+              </Button>
+            ) : (
+              <Button>
+                <Link href="/login">Sign In</Link>
+              </Button>
+            )}
           </div>
         </div>
 
