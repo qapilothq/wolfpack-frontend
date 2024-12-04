@@ -1,34 +1,29 @@
-"use client"
-import React, { Suspense, useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  CodeIcon, 
-  BookIcon, 
-  BriefcaseIcon, 
-  TargetIcon 
-} from 'lucide-react';
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { redirect, useSearchParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { LoaderIcon } from 'lucide-react';
+"use client";
+import React, { Suspense, useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CodeIcon, BookIcon, BriefcaseIcon, TargetIcon } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { redirect, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { LoaderIcon } from "lucide-react";
 
 interface UserData {
   pi?: {
     Name?: string;
-    'Phone Number'?: string;
+    "Phone Number"?: string;
     Email?: string;
   };
   work_history?: {
-    'Work Experience'?: Array<{
+    "Work Experience"?: Array<{
       Role: string;
-      'Company Name': string;
+      "Company Name": string;
       Duration: string;
     }>;
   };
   projects?: {
-    'Project details'?: Array<{
-      'Project Name': string;
-      'Project Description': string;
+    "Project details"?: Array<{
+      "Project Name": string;
+      "Project Description": string;
     }>;
   };
   education?: string;
@@ -38,30 +33,32 @@ interface UserData {
 const CandidateProfile: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const searchParams = useSearchParams(); 
+  const searchParams = useSearchParams();
   const profile_id = searchParams.get("profile_id");
   const role_id = searchParams.get("role_id");
-
-
 
   useEffect(() => {
     const getuserdata = async () => {
       try {
-        const response = await fetch("https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis", {
-          method: "POST",
-          headers: {
-            "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I"
-          },
-          body: JSON.stringify({
-            "requestType" : "getProfileSummary",
-            "profile_id": profile_id,
-          }), 
-        });
-  
+        const response = await fetch(
+          "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
+          {
+            method: "POST",
+            headers: {
+              Authorization:
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
+            },
+            body: JSON.stringify({
+              requestType: "getProfileSummary",
+              profile_id: profile_id,
+            }),
+          }
+        );
+
         if (!response.ok) {
           throw new Error(`Error: ${response.status} ${response.statusText}`);
         }
-  
+
         const finaluserdata = await response.json();
         setUserData(finaluserdata[0]);
       } catch (error) {
@@ -72,9 +69,9 @@ const CandidateProfile: React.FC = () => {
           console.error("Unexpected error:", error);
         }
       }
-    }
+    };
     getuserdata();
-  }, [profile_id]); 
+  }, [profile_id]);
 
   if (error) {
     return <div>Error: {error}</div>;
@@ -82,25 +79,25 @@ const CandidateProfile: React.FC = () => {
 
   if (!userData) {
     return (
-      <div className='min-h-screen flex w-full items-center justify-center'>
-      <div className='flex items-center jusspace-x-2'>
-        <LoaderIcon className='animate-spin' />
-        <span>Loading</span>
+      <div className="min-h-screen flex w-full items-center justify-center">
+        <div className="flex items-center jusspace-x-2">
+          <LoaderIcon className="animate-spin" />
+          <span>Loading</span>
+        </div>
       </div>
-    </div>
     );
   }
 
   const candidateData = {
     personalInfo: {
       name: userData.pi?.Name,
-      phone: userData.pi?.['Phone Number'],
+      phone: userData.pi?.["Phone Number"],
       email: userData.pi?.Email,
     },
-    workExperience: userData.work_history?.['Work Experience'] || [],
-    projects: userData.projects?.['Project details'] || [],
+    workExperience: userData.work_history?.["Work Experience"] || [],
+    projects: userData.projects?.["Project details"] || [],
     education: userData.education,
-    skills: userData.skills?.split(',') || []
+    skills: userData.skills?.split(",") || [],
   };
 
   return (
@@ -117,13 +114,19 @@ const CandidateProfile: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <p><strong>Name:</strong> {candidateData.personalInfo.name}</p>
-                <p><strong>Phone:</strong> {candidateData.personalInfo.phone}</p>
-                <p><strong>Email:</strong> {candidateData.personalInfo.email}</p>
+                <p>
+                  <strong>Name:</strong> {candidateData.personalInfo.name}
+                </p>
+                <p>
+                  <strong>Phone:</strong> {candidateData.personalInfo.phone}
+                </p>
+                <p>
+                  <strong>Email:</strong> {candidateData.personalInfo.email}
+                </p>
               </div>
             </CardContent>
           </Card>
-  
+
           {/* Work Experience Card */}
           <Card className="hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
@@ -137,14 +140,14 @@ const CandidateProfile: React.FC = () => {
                 {candidateData.workExperience.map((value, index) => (
                   <div key={index} className="mb-4">
                     <p className="font-semibold">{value.Role}</p>
-                    <p className="text-gray-600">{value['Company Name']}</p>
+                    <p className="text-gray-600">{value["Company Name"]}</p>
                     <p className="text-sm text-gray-500">{value.Duration}</p>
                   </div>
                 ))}
               </CardContent>
             </ScrollArea>
           </Card>
-  
+
           {/* Education Card */}
           <Card className="hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
@@ -159,7 +162,7 @@ const CandidateProfile: React.FC = () => {
               </CardContent>
             </ScrollArea>
           </Card>
-  
+
           {/* Projects Card */}
           <Card className="md:col-span-2 lg:col-span-1 hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
@@ -172,14 +175,16 @@ const CandidateProfile: React.FC = () => {
               <CardContent>
                 {candidateData.projects.map((value, index) => (
                   <div key={index} className="mb-4">
-                    <p className="font-semibold">{value['Project Name']}</p>
-                    <p className="text-gray-600">{value['Project Description']}</p>
+                    <p className="font-semibold">{value["Project Name"]}</p>
+                    <p className="text-gray-600">
+                      {value["Project Description"]}
+                    </p>
                   </div>
                 ))}
               </CardContent>
             </ScrollArea>
           </Card>
-  
+
           {/* Skills Card */}
           <Card className="hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
@@ -191,8 +196,8 @@ const CandidateProfile: React.FC = () => {
             <CardContent>
               <div className="flex flex-wrap gap-2">
                 {candidateData.skills.map((skill, index) => (
-                  <span 
-                    key={index} 
+                  <span
+                    key={index}
                     className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded"
                   >
                     {skill}
@@ -204,16 +209,20 @@ const CandidateProfile: React.FC = () => {
         </div>
         {/* Action Buttons */}
         <div className="flex justify-center mt-8 space-x-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="hover:bg-gray-100"
-            onClick={() => alert('Assessment Link Sent to the candidate!')}
+            onClick={() => alert("Assessment Link Sent to the candidate!")}
           >
             Send Assessment Link
           </Button>
-          <Button 
+          <Button
             className="bg-primary hover:bg-primary-dark"
-            onClick={()=> { redirect(`assessment-result?role_id=${role_id}&profile_id=${profile_id}`)}}
+            onClick={() => {
+              redirect(
+                `assessment-result?role_id=${role_id}&profile_id=${profile_id}`
+              );
+            }}
           >
             Evaluate Assessment
           </Button>
