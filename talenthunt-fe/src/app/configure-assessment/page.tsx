@@ -1,15 +1,14 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusIcon, TrashIcon, LoaderIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 interface Role {
   name: string;
-  id: Number;
+  id: number;
   job_description: string;
   suggested_questions?: string[];
 }
@@ -18,7 +17,7 @@ const Assessment: React.FC = () => {
   const { toast } = useToast();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [questionsAdded, setQuestionsAdded] = useState<string[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
+  // const [roles, setRoles] = useState<Role[]>([]);
   const [currentRoleDescription, setCurrentRoleDescription] =
     useState<string>("");
   const [currentAISuggestions, setCurrentAISuggestions] = useState<string[]>(
@@ -125,7 +124,7 @@ const Assessment: React.FC = () => {
           suggested_questions: role.suggested_questions || [],
         }));
 
-        setRoles(formattedRoles);
+        // setRoles(formattedRoles);
 
         // If there's a role_id from URL, try to set its description
         console.log("formattedRole", formattedRoles);
@@ -490,4 +489,10 @@ const Leftpanel: React.FC<LeftpanelProps> = ({
   );
 };
 
-export default Assessment;
+const AssessmentPage: React.FC = () => (
+  <Suspense fallback={<div>Loading...</div>}>
+    <Assessment />
+  </Suspense>
+);
+
+export default AssessmentPage;

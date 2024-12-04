@@ -60,6 +60,7 @@ const CandidateProfile: React.FC = () => {
         }
 
         const finaluserdata = await response.json();
+        console.log("finaluserdata", finaluserdata);
         setUserData(finaluserdata[0]);
       } catch (error) {
         if (error instanceof Error) {
@@ -87,17 +88,20 @@ const CandidateProfile: React.FC = () => {
       </div>
     );
   }
-
   const candidateData = {
     personalInfo: {
-      name: userData.pi?.Name,
-      phone: userData.pi?.["Phone Number"],
-      email: userData.pi?.Email,
+      name: userData?.pi?.Name || "Not Found",
+      phone: userData?.pi?.["Phone Number"] || "Not Found",
+      email: userData?.pi?.Email || "Not Found",
     },
-    workExperience: userData.work_history?.["Work Experience"] || [],
-    projects: userData.projects?.["Project details"] || [],
-    education: userData.education,
-    skills: userData.skills?.split(",") || [],
+    workExperience: Array.isArray(userData?.work_history?.["Work Experience"])
+      ? userData.work_history["Work Experience"]
+      : [],
+    projects: Array.isArray(userData?.projects?.["Project details"])
+      ? userData.projects["Project details"]
+      : [],
+    education: userData?.education || "Not Found",
+    skills: userData?.skills?.split(",") || ["Not Found"],
   };
 
   return (
@@ -137,13 +141,17 @@ const CandidateProfile: React.FC = () => {
             </CardHeader>
             <ScrollArea className="h-[200px]">
               <CardContent>
-                {candidateData.workExperience.map((value, index) => (
-                  <div key={index} className="mb-4">
-                    <p className="font-semibold">{value.Role}</p>
-                    <p className="text-gray-600">{value["Company Name"]}</p>
-                    <p className="text-sm text-gray-500">{value.Duration}</p>
-                  </div>
-                ))}
+                {candidateData.workExperience.length > 0 ? (
+                  candidateData.workExperience.map((value, index) => (
+                    <div key={index} className="mb-4">
+                      <p className="font-semibold">{value.Role}</p>
+                      <p className="text-gray-600">{value["Company Name"]}</p>
+                      <p className="text-sm text-gray-500">{value.Duration}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p>Not Found</p>
+                )}
               </CardContent>
             </ScrollArea>
           </Card>
@@ -173,14 +181,18 @@ const CandidateProfile: React.FC = () => {
             </CardHeader>
             <ScrollArea className="h-[200px]">
               <CardContent>
-                {candidateData.projects.map((value, index) => (
-                  <div key={index} className="mb-4">
-                    <p className="font-semibold">{value["Project Name"]}</p>
-                    <p className="text-gray-600">
-                      {value["Project Description"]}
-                    </p>
-                  </div>
-                ))}
+                {candidateData.projects.length > 0 ? (
+                  candidateData.projects.map((value, index) => (
+                    <div key={index} className="mb-4">
+                      <p className="font-semibold">{value["Project Name"]}</p>
+                      <p className="text-gray-600">
+                        {value["Project Description"]}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p>Not Found</p>
+                )}
               </CardContent>
             </ScrollArea>
           </Card>
@@ -195,14 +207,18 @@ const CandidateProfile: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {candidateData.skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded"
-                  >
-                    {skill}
-                  </span>
-                ))}
+                {candidateData.skills.length > 0 ? (
+                  candidateData.skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded"
+                    >
+                      {skill}
+                    </span>
+                  ))
+                ) : (
+                  <span>Not Found</span>
+                )}
               </div>
             </CardContent>
           </Card>

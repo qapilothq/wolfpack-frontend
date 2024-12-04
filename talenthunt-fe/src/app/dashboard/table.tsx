@@ -38,7 +38,7 @@ import { Loader2 } from "lucide-react";
 export type Summary = {
   id: number;
   score: number;
-  assessmentscore?: number;
+  assessment_score?: number;
   name: string;
   status: "approved" | "rejected" | "assessmentsent" | "assessmentdone";
   email: string;
@@ -82,7 +82,8 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
     accessorKey: "assessmentscore",
     header: () => <div className="">Assessment score</div>,
     cell: ({ row }) => {
-      const finalscore = row.getValue("assessmentscore");
+      const finalscore = row.original.assessment_score;
+
       const sc: string = finalscore ? `${finalscore}` : "--";
       return <div className="font-medium">{sc}</div>;
     },
@@ -117,7 +118,16 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
                 );
               }}
             >
-              Send Assessment Link
+              View Assessment Page
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                redirect(
+                  `/assessment-result?role_id=${role_id}&profile_id=${candidateid}`
+                );
+              }}
+            >
+              Evaluate Assessment
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

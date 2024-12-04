@@ -3,7 +3,12 @@ import React, { useEffect, useState, Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2Icon, XCircleIcon, TargetIcon } from "lucide-react";
+import {
+  CheckCircle2Icon,
+  XCircleIcon,
+  TargetIcon,
+  ClockIcon,
+} from "lucide-react";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { useSearchParams } from "next/navigation";
 import { LoaderIcon } from "lucide-react";
@@ -88,7 +93,9 @@ const AssessmentResults: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("checking", role_id, profile_id);
+        console.log("Role ID:", role_id);
+        console.log("Profile ID:", profile_id);
+
         const assessmentResponse = await fetch(
           "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
           {
@@ -104,23 +111,20 @@ const AssessmentResults: React.FC = () => {
             }),
           }
         );
+
         const data = await assessmentResponse.json();
+        console.log("Raw Assessment Data:", data);
+        console.log("Assessment Data Type:", typeof data);
+        console.log("Assessment Data Length:", data.length);
+        console.log("First Assessment Item:", data[0]);
 
-        console.log("assessmentResponse", data);
-
-        if (!assessmentResponse.ok) {
-          throw new Error(`HTTP error! status: ${assessmentResponse.status}`);
-        }
-        const assessmentData = await assessmentResponse.json();
-        console.log("assessmentData", assessmentData);
-        console.log(profile_id);
         const profileResponse = await fetch(
           "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
           {
             method: "POST",
             headers: {
-              Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
+              Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I`,
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               requestType: "getProfileSummary",
@@ -129,27 +133,36 @@ const AssessmentResults: React.FC = () => {
           }
         );
 
-        // if (!profileResponse.ok) {
-        //   throw new Error(`HTTP error! status: ${profileResponse.status}`);
-        // }
         const profileData = await profileResponse.json();
+        console.log("Raw Profile Data:", profileData);
+        console.log("Profile Data Type:", typeof profileData);
+        console.log("Profile Data Length:", profileData.length);
+        console.log("First Profile Item:", profileData[0]);
 
-        const temp = profileData[0];
-        console.log(temp);
+        // Safe data extraction with optional chaining and nullish coalescing
+        const candidateName = profileData[0]?.pi?.Name ?? "Unknown";
+        const candidateEmail = profileData[0]?.pi?.Email ?? "N/A";
+        const candidateResponses = data.data[0]?.assessment ?? [];
+
         setCandidate({
-          name: temp.pi.Name,
-          email: temp.pi.Email,
-          responses: assessmentData.assessment,
+          name: candidateName,
+          email: candidateEmail,
+          responses: candidateResponses,
         });
+
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Detailed Error:", error);
         setLoading(false);
       }
     };
 
     fetchData();
   }, [role_id, profile_id]);
+
+  useEffect(() => {
+    console.log("candidate from useffect", candidate);
+  }, [candidate]);
 
   const handleSaveEvaluation = async () => {
     console.log(evaluations);
@@ -180,6 +193,26 @@ const AssessmentResults: React.FC = () => {
           <LoaderIcon className="animate-spin" />
           <span>Loading</span>
         </div>
+      </div>
+    );
+  }
+
+  if (candidate?.responses.length === 0) {
+    return (
+      <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center">
+        <Card className="w-full max-w-2xl shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center text-xl font-bold">
+              <ClockIcon className="mr-2 text-gray-500" />
+              Assessment Pending
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700">
+              Asessment is not completed by the candidate.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
