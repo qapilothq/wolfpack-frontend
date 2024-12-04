@@ -93,6 +93,7 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
     enableHiding: false,
     cell: ({ row }) => {
       const candidateid = row.original.id;
+      console.log(row.original);
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -104,6 +105,7 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
           <DropdownMenuContent align="end">
             <DropdownMenuItem
               onClick={() => {
+                sessionStorage.setItem("USER_PROF", JSON.stringify(row.original));
                 redirect(
                   `/candidate?role_id=${role_id}&profile_id=${candidateid}`
                 );

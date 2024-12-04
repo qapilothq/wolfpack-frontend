@@ -1,11 +1,20 @@
 "use client";
 import React, { Suspense, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CodeIcon, BookIcon, BriefcaseIcon, TargetIcon } from "lucide-react";
+import { CodeIcon, BookIcon, BriefcaseIcon, TargetIcon, FlagIcon, SparkleIcon, KanbanIcon } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { redirect, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { LoaderIcon } from "lucide-react";
+import {
+  Label,
+  PolarGrid,
+  PolarRadiusAxis,
+  RadialBar,
+  RadialBarChart,
+} from "recharts"
+import { ChartConfig, ChartContainer } from "@/components/ui/chart"
+
 
 interface UserData {
   pi?: {
@@ -22,20 +31,61 @@ interface UserData {
   };
   projects?: {
     "Project details"?: Array<{
-      "Project Name": string;
-      "Project Description": string;
+      "Project Name"?: string;
+      "Project Description"?: string;
     }>;
   };
   education?: string;
   skills?: string;
 }
 
+interface UserProfile {
+  match_reasons?: string[];
+  assessment_score?: number;
+  created_at?: string;
+  deleted?: boolean;
+  email?: string;
+  id?: number;
+  name?: string;
+  profile_url?: string;
+  red_flags?: {
+    high?: string[],
+    low?: string[],
+    medium?: string[]
+  };
+  role_id?: number;
+  score?: number;
+  status?: string;
+  updated_at?: string;
+}
+
+const profileScoreChartConfig = {
+  score: {
+    label: "Profile Score",
+    color: "hsl(var(--chart-2))",
+  },
+} satisfies ChartConfig
+
+
 const CandidateProfile: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [getProf, setgetProf] = useState<UserProfile>();
+  const [roleName, setRoleName] = useState<string>();
   const searchParams = useSearchParams();
   const profile_id = searchParams.get("profile_id");
   const role_id = searchParams.get("role_id");
+
+  // console.log(role)
+  useEffect(() => {
+    const rolejson = JSON.parse(sessionStorage.getItem("ROLES") || "[]")
+    const profjson = JSON.parse(sessionStorage.getItem("USER_PROF") || "{}")
+    const role = rolejson.filter((x: any) => x.id == role_id);
+    setRoleName(role[0].name);
+    console.log(role[0].name)
+    console.log(rolejson)
+    setgetProf(profjson);
+  }, [])
 
   useEffect(() => {
     const getuserdata = async () => {
@@ -131,6 +181,138 @@ const CandidateProfile: React.FC = () => {
             </CardContent>
           </Card>
 
+          {/* Profile Score Card*/}
+          <Card className="hover:shadow-lg transition-shadow duration-300">
+            {/* <CardHeader>
+              <div className="flex items-center">
+                <BriefcaseIcon className="mr-2 text-green-500" />
+                <CardTitle>Work Experience</CardTitle>
+              </div>
+            </CardHeader> */}
+              <CardContent>
+                <ChartContainer
+                  config={profileScoreChartConfig}
+                  className="mx-auto aspect-square max-h-[250px]"
+                >
+                  <RadialBarChart
+                    data={[{score : getProf?.score, fill: "var(--color-score)"}]}
+                    startAngle={0}
+                    endAngle={200}
+                    innerRadius={80}
+                    outerRadius={110}
+                  >
+                    <PolarGrid
+                      gridType="circle"
+                      radialLines={false}
+                      stroke="none"
+                      className="first:fill-muted last:fill-background"
+                      polarRadius={[86, 74]}
+                    />
+                    <RadialBar dataKey="score" background cornerRadius={10} />
+                    <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+                      <Label
+                        content={({ viewBox }) => {
+                          if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                            return (
+                              <text
+                                x={viewBox.cx}
+                                y={viewBox.cy}
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                              >
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={viewBox.cy}
+                                  className="fill-foreground text-4xl font-bold"
+                                >
+                                  {getProf?.score?.toLocaleString()}
+                                </tspan>
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={(viewBox.cy || 0) + 24}
+                                  className="fill-muted-foreground"
+                                >
+                                  Profile Score
+                                </tspan>
+                              </text>
+                            )
+                          }
+                        }}
+                      />
+                    </PolarRadiusAxis>
+                  </RadialBarChart>
+                </ChartContainer>
+              </CardContent>
+          </Card>
+
+          {/* Assessment Score Card */}
+          <Card className="hover:shadow-lg transition-shadow duration-300">
+            {/* <CardHeader>
+              <div className="flex items-center">
+                <BriefcaseIcon className="mr-2 text-green-500" />
+                <CardTitle>Assessment Score</CardTitle>
+              </div>
+            </CardHeader> */}
+              <CardContent>
+              <ChartContainer
+                  config={profileScoreChartConfig}
+                  className="mx-auto aspect-square max-h-[250px]"
+                >
+                  <RadialBarChart
+                    data={[{score : getProf?.assessment_score ?? 0, fill: "var(--color-score)"}]}
+                    startAngle={0}
+                    endAngle={100}
+                    innerRadius={80}
+                    outerRadius={110}
+                  >
+                    <PolarGrid
+                      gridType="circle"
+                      radialLines={false}
+                      stroke="none"
+                      className="first:fill-muted last:fill-background"
+                      polarRadius={[86, 74]}
+                    />
+                    <RadialBar dataKey="score" background cornerRadius={10} />
+                    <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+                      <Label
+                      className="flex item-center justify-center"
+                        content={({ viewBox }) => {
+                          if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                            return (
+                              <text
+                                x={viewBox.cx}
+                                y={viewBox.cy}
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                              >
+                            
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={viewBox.cy}
+                                  className="fill-foreground text-4xl font-bold "
+                                >
+                                  {getProf?.assessment_score?.toLocaleString() ?? "0"}
+                                </tspan>
+                                
+                                
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={(viewBox.cy || 0) + 24}
+                                  className="fill-muted-foreground"
+                                >
+                                  {getProf?.assessment_score ? "Assessment Score" : "Assessment is pending"}
+                                </tspan>
+                              </text>
+                            )
+                          }
+                        }}
+                      />
+                    </PolarRadiusAxis>
+                  </RadialBarChart>
+                </ChartContainer>
+              </CardContent>
+          </Card>
+
           {/* Work Experience Card */}
           <Card className="hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
@@ -175,7 +357,7 @@ const CandidateProfile: React.FC = () => {
           <Card className="md:col-span-2 lg:col-span-1 hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <div className="flex items-center">
-                <CodeIcon className="mr-2 text-red-500" />
+                <KanbanIcon className="mr-2 text-red-500" />
                 <CardTitle>Projects</CardTitle>
               </div>
             </CardHeader>
@@ -222,7 +404,73 @@ const CandidateProfile: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Match Results Card */}
+          <Card className="md:col-span-2 lg:col-span-1 hover:shadow-lg transition-shadow duration-300">
+            <CardHeader>
+              <div className="flex items-center">
+                <SparkleIcon className="mr-2 text-red-500" />
+                <CardTitle>Match Results for role - {roleName} </CardTitle>
+              </div>
+            </CardHeader>
+            <ScrollArea className="h-[200px]">
+              <CardContent>
+                {getProf?.match_reasons?.map((value: any, index: any) => (
+                  <div key={index} className="mb-4">
+                    {/* <p className="font-semibold">{value["Project Name"]}</p> */}
+                    <p className="text-gray-600">
+                      {value}
+                    </p>
+                  </div>
+                ))}
+              </CardContent>
+            </ScrollArea>
+          </Card>
+          {/* Red Flags */}
+          <Card className="md:col-span-2 lg:col-span-1 hover:shadow-lg transition-shadow duration-300">
+            <CardHeader>
+              <div className="flex items-center">
+                <FlagIcon className="mr-2 text-red-500" />
+                <CardTitle>Red Flags for the Candidate</CardTitle>
+              </div>
+            </CardHeader>
+            <ScrollArea className="h-[200px]">
+              <CardContent>
+                {getProf?.red_flags?.high && getProf?.red_flags?.high?.length > 1 &&
+                  <div key="1" className="mb-4">
+                    <p className="font-semibold">High</p>
+                    {getProf?.red_flags.high.map((value: any, index: any) => (
+                      <p key={index} className="text-gray-600">
+                        {value}
+                      </p>
+                    ))}
+                  </div>
+                }
+                {getProf?.red_flags?.medium && getProf?.red_flags?.medium?.length > 1 &&
+                  <div key="2" className="mb-4">
+                    <p className="font-semibold">Medium</p>
+                    {getProf?.red_flags?.medium.map((value: any, index: any) => (
+                      <p key={index} className="text-gray-600">
+                        {value}
+                      </p>
+                    ))}
+                  </div>
+                }
+                {getProf?.red_flags?.low && getProf?.red_flags?.low?.length > 1 &&
+                  <div key="3" className="mb-4">
+                    <p className="font-semibold">Low</p>
+                    {getProf?.red_flags?.low.map((value: any, index: any) => (
+                      <p key={index} className="text-gray-600">
+                        {value}
+                      </p>
+                    ))}
+                  </div>
+                }
+              </CardContent>
+            </ScrollArea>
+          </Card>
         </div>
+
         {/* Action Buttons */}
         <div className="flex justify-center mt-8 space-x-4">
           <Button
@@ -247,7 +495,6 @@ const CandidateProfile: React.FC = () => {
     </div>
   );
 };
-
 const CandidateProfilePage: React.FC = () => (
   <Suspense fallback={<div>Loading...</div>}>
     <CandidateProfile />
