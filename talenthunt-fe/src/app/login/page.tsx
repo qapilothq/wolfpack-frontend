@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import useStore from "../stores/store";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -13,6 +14,8 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  const { setIsLoggedIn } = useStore();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +44,8 @@ const Login: React.FC = () => {
       }
 
       const data = await response.json();
-      localStorage.setItem("logtoken", data.token);
+      localStorage.setItem("authtoken", data.token);
+      setIsLoggedIn(true);
       console.log("Login successful:", data);
       router.push("/dashboard");
       // Handle successful login (e.g., redirect, store token, etc.)
@@ -51,13 +55,6 @@ const Login: React.FC = () => {
       setLoading(false);
     }
   };
-
-  // useEffect(() => {
-  //   const logtoken = localStorage.getItem("logtoken");
-  //   if (logtoken) {
-  //     router.push("/create-role");
-  //   }
-  // }, [router]);
 
   return (
     <div className="min-h-screen w-full bg-gray-100 flex flex-col">
@@ -122,14 +119,6 @@ const Login: React.FC = () => {
                       className="mt-2 border-gray-300 focus:border-primary"
                       placeholder="Enter your password"
                     />
-                  </div>
-                  <div className="text-right">
-                    <a
-                      href="/forgot-password"
-                      className="text-sm text-primary hover:underline"
-                    >
-                      Forgot password?
-                    </a>
                   </div>
                   <Button
                     type="submit"

@@ -1,29 +1,30 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { redirect } from "next/navigation";
+import useStore from "../stores/store";
 
 const AuthGuard = <P extends object>(
   WrappedComponent: React.ComponentType<P>
 ) => {
   const ComponentWithAuth = (props: P) => {
-    const [isAuth, setIsAuth] = useState(false);
+    const { isLoggedIn, setIsLoggedIn } = useStore(); // Use zustand store
 
     useEffect(() => {
       const checkAuth = () => {
         if (typeof window !== "undefined") {
-          const logToken = localStorage.getItem("logtoken");
-          console.log("Log token:", logToken);
-          if (!logToken) {
+          const authtoken = localStorage.getItem("authtoken");
+          if (!authtoken) {
+            setIsLoggedIn(false);
             redirect("/login");
           } else {
-            setIsAuth(true);
+            setIsLoggedIn(true);
           }
         }
       };
 
       checkAuth();
-    }, []);
+    }, [setIsLoggedIn]);
 
-    return isAuth ? <WrappedComponent {...props} /> : null;
+    return isLoggedIn ? <WrappedComponent {...props} /> : null; // Use zustand state
   };
 
   return ComponentWithAuth;

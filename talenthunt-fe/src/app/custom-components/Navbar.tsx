@@ -1,22 +1,28 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { Menu } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { Menu, LogOut } from "lucide-react";
+import { redirect, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import useStore from "../stores/store";
 
 const links = [
   { title: "Create Role", link: "/create-role" },
   { title: "Candidates Dashboard", link: "/dashboard" },
 ];
-
 const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { isLoggedIn, setIsLoggedIn } = useStore();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleSignOut = () => {
+    setIsLoggedIn(false);
+    redirect("/login");
   };
 
   return (
@@ -32,10 +38,8 @@ const Navbar: React.FC = () => {
                 width={80}
                 height={50}
               />
-              {/* <span className='font-bold text-2xl text-gray-800'>Wolf-Pack</span> */}
               <h2 className="text-xl text-gray-900 ml-2 font-mono">
-                {" "}
-                Wolf-Pack{" "}
+                Wolf-Pack
               </h2>
             </Link>
           </div>
@@ -56,16 +60,29 @@ const Navbar: React.FC = () => {
               </Link>
             ))}
 
-            {/* Search and Action Buttons */}
-            {/* <div className='flex items-center space-x-2'>
-              <Button variant="ghost" size="icon" className='text-gray-600 hover:text-gray-800'>
-                <Search className='h-5 w-5' />
+            {isLoggedIn && (
+              <Button
+                variant="ghost"
+                onClick={handleSignOut}
+                className="text-red-600 hover:bg-red-400 hover:text-white font-bold"
+              >
+                <LogOut className="h-5 w-5 mr-2" />
+                Sign Out
               </Button>
-            </div> */}
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center space-x-2">
+            {isLoggedIn && (
+              <Button
+                variant="ghost"
+                onClick={handleSignOut}
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -104,111 +121,3 @@ const Navbar: React.FC = () => {
 };
 
 export default Navbar;
-// "use client"
-// import React from 'react'
-// import Link from 'next/link'
-// import { Menu, Search } from 'lucide-react'
-// import { usePathname } from 'next/navigation'
-// const links = [
-//   {
-//     'title': 'Create role',
-//     'link': '/JD-Create'
-//   },
-//   {
-//     'title': 'Dashboard',
-//     'link': '/dashboard'
-//   },
-//   {
-//     'title':'Configure Assessment',
-//     'link':'/assessment'
-//   }
-// ]
-
-// const Navbar = () => {
-//   const [state, setState] = React.useState(false)
-//   const pathname = usePathname()
-//   return (
-//     <nav className="bg-[#151a1f] w-full">
-//       <div className="items-center  max-w-screen-xl  md:flex ">
-//         <div className="flex items-center justify-between py-3 md:py-5 md:block">
-//           <Link href="/">
-//             <h1 className="text-3xl font-bold pl-5 text-white">Wolf-Pack</h1>
-//           </Link>
-//           <div className="md:hidden">
-//             <button
-//               className="text-gray-700 outline-none bg-white p-2 rounded-md focus:border-gray-400 focus:border"
-//               onClick={() => setState(!state)}
-
-//             >
-//               <Menu />
-//             </button>
-//           </div>
-//         </div>
-//         <div
-//           className={`flex-1 justify-self-center pb-3 mt-8 md:block md:pb-0 md:mt-0 ${
-//             state ? "block" : "hidden"
-//           }`}
-//         >
-//           <ul className="justify-center items-center space-y-8 md:flex md:space-x-6 md:space-y-0">
-//             {links.map((link, idx) => (
-//               <li key={idx} className="text-gray-600 hover:text-indigo-600">
-//                 <Link href={`${link.link}`} key={link.link} className={`hover:text-[#5483b5] ${pathname === link.link? 'text-[#f9fafb] font-bold' : 'text-blue-200' }`}>
-// {link.title}
-//                 </Link>
-//               </li>
-//             ))}
-//           </ul>
-//         </div>
-//       </div>
-//     </nav>
-//   )
-// }
-
-// export default Navbar
-
-// 'use client'
-// import React from 'react'
-// import Link from 'next/link'
-// import { usePathname } from 'next/navigation'
-
-// const links = [
-//   {
-//     'title': 'Create role',
-//     'link': '/JD-Create'
-//   },
-//   {
-//     'title': 'Dashboard',
-//     'link': '/dashboard'
-//   },
-//   {
-//     'title':'Design Assessment',
-//     'link':'/assessment'
-//   }
-// ]
-
-// const Navbar = () => {
-//   const pathname = usePathname()
-//   return (
-//     <div className='min-h-10 flex items-center bg-[#5aabab]'>
-//       <div className='w-full flex justify-between'>
-//         <div>
-//           <Link href='/'>TalentHunt</Link>
-//         </div>
-//         <div className='flex gap-10 font-bold'>
-//           {
-//             links.map((link) => (
-//               <Link href={`${link.link}`} key={link.link} className={`hover:text-[#5483b5] ${pathname === link.link? 'text-[#314d6a] font-bold' : 'text-blue-200' }`}>
-//                 {link.title}
-//               </Link>
-//             ))
-//           }
-//         </div>
-//         <div>
-//           user
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
-
-// export default Navbar
