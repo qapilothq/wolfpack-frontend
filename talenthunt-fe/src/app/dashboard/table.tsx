@@ -41,11 +41,7 @@ export type Summary = {
   score: number;
   assessment_score?: number;
   name: string;
-  status:
-    | "accepted"
-    | "rejected"
-    | "assessment_evaluated"
-    | "assessment_submitted";
+  status: "accepted" | "rejected" | "assessment_evaluated" | "assessment-done";
   email: string;
   role_id: number;
 };
@@ -56,10 +52,8 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
     accessorKey: "name",
     header: "Candidate Name",
     cell: ({ row }) => {
-      const name = row.getValue("name");
-      const displayName =
-        name !== undefined && name !== null ? String(name) : "---";
-      return <div className="capitalize">{displayName}</div>;
+      const name = String(row.getValue("name") || "Not Found");
+      return <div className="capitalize">{name}</div>;
     },
   },
   {
@@ -70,7 +64,7 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
       const displayScore =
         score !== undefined && score !== null
           ? parseFloat(String(score))
-          : "---";
+          : "Not Found";
       return <div className="font-medium">{displayScore}</div>;
     },
   },
@@ -79,24 +73,23 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
     header: "Status",
     cell: ({ row }) => {
       const score = parseInt(row.getValue("score"));
-      const be_status = row.getValue("status");
-      const status =
-        be_status !== undefined && be_status !== null ? be_status : "---";
+      const be_status = row.getValue("status") || "Not Found";
       let color: string = "";
+      const status = row.getValue("status");
       const name: string =
-        status === "assessment_evaluated"
+        be_status === "assessment_evaluated"
           ? "Assessment Evaluated"
-          : status === "assessment_submitted"
-          ? "Assessment Submitted"
+          : be_status === "assessment_done"
+          ? "Assessment Done"
           : status === "accepted" && !score
           ? "Processing"
           : score > 40
           ? "Eligible"
           : "Not Eligible";
 
-      if (status === "assessment_evaluated") {
+      if (be_status === "assessment_evaluated") {
         color = "text-blue-500";
-      } else if (status === "assessment_submitted") {
+      } else if (be_status === "assessment_done") {
         color = "text-yellow-400";
       } else if (status === "accepted" && !score) {
         color = "text-orange-400";
@@ -115,9 +108,7 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
     cell: ({ row }) => {
       const finalscore = row.original.assessment_score;
       const sc: string =
-        finalscore !== undefined && finalscore !== null
-          ? `${finalscore}`
-          : "---";
+        finalscore !== undefined ? `${finalscore}` : "Not Found";
       return <div className="font-medium">{sc}</div>;
     },
   },
@@ -151,11 +142,10 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
             >
               Profile View
             </DropdownMenuItem>
-            {be_status === "accepted" || be_status === null ? (
+            {be_status === "accepted" ? (
               <DropdownMenuItem
                 onClick={() => {
-                  const baseUrl = window.location.origin;
-                  const assessmentLink = `${baseUrl}/assessment?role_id=${role_id}&profile_id=${candidateid}`;
+                  const assessmentLink = `/assessment?role_id=${role_id}&profile_id=${candidateid}`;
                   navigator.clipboard
                     .writeText(assessmentLink)
                     .then(() => {
@@ -169,7 +159,18 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
                 Copy Assessment Link
               </DropdownMenuItem>
             ) : null}
-            {be_status === "assessment_submitted" ? (
+            {/* {be_status === "assessment-done" ? (
+              <DropdownMenuItem
+                onClick={() => {
+                  router.push(
+                    `/assessment-result?role_id=${role_id}&profile_id=${candidateid}`
+                  );
+                }}
+              >
+                Evaluate Assessment
+              </DropdownMenuItem>
+            ) : null} */}
+            {be_status !== "assessment_evaluated" ? (
               <DropdownMenuItem>
                 <Link
                   href={`/assessment-result?role_id=${role_id}&profile_id=${candidateid}`}
