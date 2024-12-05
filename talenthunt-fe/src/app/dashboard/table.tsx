@@ -67,20 +67,20 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
     accessorKey: "score",
     header: () => <div className="">Profile Score</div>,
     cell: ({ row }) => {
-      const score = row.getValue("score");
+      const score = row.getValue("score") as number; // Type assertion to number
       const displayScore =
         score !== undefined && score !== null
           ? parseFloat(String(score))
           : "---";
-      return <div className="font-medium">{displayScore}</div>;
+      const scoreColor = score > 40 ? "text-green-600" : "text-red-600"; // Green for eligible, red for not eligible
+      return <div className={`font-bold ${scoreColor}`}>{displayScore}</div>;
     },
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const score = parseInt(row.getValue("score"));
-      const be_status = row.getValue("status");
+      const be_status = row.getValue("status") as string;
       const status =
         be_status !== undefined && be_status !== null ? be_status : "---";
       let color: string = "";
@@ -89,22 +89,20 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
           ? "Assessment Evaluated"
           : status === "assessment_submitted"
           ? "Assessment Submitted"
-          : status === "accepted" && !score
-          ? "Processing"
-          : score > 40
-          ? "Eligible"
-          : "Not Eligible";
+          : status === "assessment_generated"
+          ? "Assessment Generated"
+          : status === "accepted"
+          ? "Assesment Pending"
+          : status;
 
       if (status === "assessment_evaluated") {
-        color = "text-blue-500";
+        color = "text-blue-600"; // Deep blue for evaluated
       } else if (status === "assessment_submitted") {
-        color = "text-yellow-400";
-      } else if (status === "accepted" && !score) {
-        color = "text-orange-400";
-      } else if (score > 40) {
-        color = "text-green-400";
-      } else {
-        color = "text-red-400";
+        color = "text-yellow-600"; // Deeper yellow for submitted
+      } else if (status === "assessment_generated") {
+        color = "text-purple-500"; // Purple for generated
+      } else if (status === "accepted") {
+        color = "text-orange-500"; // Orange for processing
       }
 
       return <div className={`capitalize ${color}`}>{name}</div>;
