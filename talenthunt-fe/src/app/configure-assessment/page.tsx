@@ -32,6 +32,7 @@ const Assessment: React.FC = () => {
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [rolesError, setRolesError] = useState<string | null>(null);
   const [questionsError, setQuestionsError] = useState<string | null>(null);
+  const [role, setRole] = useState<Role>();
 
   const handleConfigureAssessment = async () => {
     if (!selectedRole) {
@@ -50,7 +51,8 @@ const Assessment: React.FC = () => {
         {
           method: "POST",
           headers: {
-            Authorization: process.env.BEARER_TOKEN || "",
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
           },
           body: JSON.stringify({
             requestType: "createCustomQuestions",
@@ -124,18 +126,17 @@ const Assessment: React.FC = () => {
           suggested_questions: role.suggested_questions || [],
         }));
 
-        // setRoles(formattedRoles);
-
         // If there's a role_id from URL, try to set its description
         console.log("formattedRole", formattedRoles);
         if (role_id) {
           const selectedRoleObj = formattedRoles.find((role: Role) => {
             console.log(role.id, role_id);
-            return role.id === Number(role_id.trim()); // Convert role_id to a number
+            return role.id === Number(role_id.trim());
           });
 
           console.log("selectedRoleObj", selectedRoleObj);
           if (selectedRoleObj) {
+            setRole(selectedRoleObj);
             setCurrentRoleDescription(selectedRoleObj.job_description);
           }
         }
@@ -149,18 +150,6 @@ const Assessment: React.FC = () => {
 
     getRoles();
   }, [role_id]);
-
-  // useEffect(() => {
-  //   // When selectedRole changes, update the role description
-  //   if (selectedRole) {
-  //     const selectedRoleObj = roles.find(
-  //       (role) => role.id === Number(role_id.trim())
-  //     );
-  //     if (selectedRoleObj) {
-  //       setCurrentRoleDescription(selectedRoleObj.job_description);
-  //     }
-  //   }
-  // }, [selectedRole, roles]);
 
   useEffect(() => {
     const getAIQuestions = async () => {
@@ -234,16 +223,14 @@ const Assessment: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 p-8">
-      <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden">
+    <div className="min-h-screen w-full bg-gray-200 py-8">
+      {/* Removed border, added py-8 for padding */}
+      <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl max-h-[90vh] overflow-y-auto">
         <div className="bg-gray-100 p-6 border-b border-gray-200">
-          <h1 className="font-bold text-3xl text-gray-800">
-            Configure Assessment
-          </h1>
-        </div>
-
-        <div className="p-6">
-          <div>
+          <div className="flex justify-between items-center">
+            <h1 className="font-bold text-3xl text-gray-800">
+              Configure Assessment
+            </h1>
             <div className="mb-6 flex flex-col md:flex-row justify-between">
               <Button
                 disabled={questionsAdded.length === 0 || isConfiguring}
@@ -260,13 +247,17 @@ const Assessment: React.FC = () => {
                 )}
               </Button>
             </div>
+          </div>
+        </div>
 
+        <div className="p-6">
+          <div>
             {selectedRole && (
               <div className="mt-4 text-sm text-gray-600 bg-gray-50 p-4 rounded-lg">
-                <span className="font-semibold text-gray-800">
-                  Role Description:{" "}
-                </span>
-                {currentRoleDescription || "No description available"}
+                <h2 className="font-semibold text-md text-gray-800">
+                  {role?.name}
+                </h2>
+                <p>{currentRoleDescription || "No description available"}</p>
               </div>
             )}
           </div>
@@ -333,7 +324,7 @@ const RightPanel: React.FC<RightPanelProps> = ({
         <h2 className="font-bold text-xl text-gray-800 mb-4">
           AI Suggested Questions
         </h2>
-        <div className="space-y-4">
+        <div className="space-y-4 pr-2">
           {aiSuggestions.map((question) => (
             <QuestionCard
               key={question}

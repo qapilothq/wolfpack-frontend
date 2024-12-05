@@ -93,19 +93,19 @@ const Home: React.FC = () => {
       <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl">
+            <AlertDialogTitle className="text-2xl font-mono">
               Wolf-Pack: Trial Version
             </AlertDialogTitle>
-            <AlertDialogDescription className="">
-              Welcome to Wolf-Pack! This platform is currently under active
-              development. Some features may be incomplete or subject to change.
-              We appreciate your feedback and understanding as we continue to
-              improve our service.
+            <AlertDialogDescription className="text-sm text-gray-700">
+              Welcome to Wolf-Pack! We&apos;re in active development, with
+              features still evolving. Your valuable feedback will help us
+              improve.
               <br />
-              Mail us at:{" "}
+              <br />
+              For login credentials or feedback, please contact:{" "}
               <a
                 href="mailto:aditya@qapilot.com"
-                className="font-bold hover:underline"
+                className="font-bold text-black hover:underline"
               >
                 aditya@qapilot.com
               </a>

@@ -5,8 +5,8 @@ import { FileUp } from "lucide-react";
 import DataTable from "./table";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { redirect } from "next/navigation";
 import AuthGuard from "../custom-components/Authguard";
+import { useRouter } from "next/navigation";
 
 const Index = () => {
   const { toast } = useToast();
@@ -14,6 +14,7 @@ const Index = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [refreshTable, setRefreshTable] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -134,7 +135,7 @@ const Index = () => {
             Candidates Dashboard
           </h1>
         </div>
-        <div className="flex flex-col md:flex-row gap-2 items-center justify-between p-4 md:p-6">
+        <div className="flex flex-col lg:flex-row gap-2 items-center justify-between p-4 md:p-6">
           <Combobox
             selectedValue={dropdownValue}
             onSelect={handleDropdownSelect}
@@ -144,7 +145,7 @@ const Index = () => {
               variant="outline"
               className="hover:bg-gray-100"
               onClick={() =>
-                redirect(`/configure-assessment?role_id=${dropdownValue}`)
+                router.push(`/configure-assessment?role_id=${dropdownValue}`)
               }
               disabled={!dropdownValue}
             >

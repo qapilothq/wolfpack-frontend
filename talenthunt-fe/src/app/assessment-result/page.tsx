@@ -91,6 +91,11 @@ const AssessmentResults: React.FC = () => {
   };
 
   useEffect(() => {
+    const user = sessionStorage.getItem("USER_PROF");
+    console.log(user);
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         console.log("Role ID:", role_id);

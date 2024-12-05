@@ -34,13 +34,14 @@ import {
 import { redirect } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 
 export type Summary = {
   id: number;
   score: number;
   assessment_score?: number;
   name: string;
-  status: "approved" | "rejected" | "assessmentsent" | "assessmentdone";
+  status: "accepted" | "rejected" | "assessment_evaluated" | "assessment-done";
   email: string;
   role_id: number;
 };
@@ -50,14 +51,21 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
   {
     accessorKey: "name",
     header: "Candidate Name",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
+    cell: ({ row }) => {
+      const name = String(row.getValue("name") || "Not Found");
+      return <div className="capitalize">{name}</div>;
+    },
   },
   {
     accessorKey: "score",
     header: () => <div className="">Profile Score</div>,
     cell: ({ row }) => {
-      const score = parseFloat(row.getValue("score"));
-      return <div className="font-medium">{score}</div>;
+      const score = row.getValue("score");
+      const displayScore =
+        score !== undefined && score !== null
+          ? parseFloat(String(score))
+          : "Not Found";
+      return <div className="font-medium">{displayScore}</div>;
     },
   },
   {
@@ -65,19 +73,29 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
     header: "Status",
     cell: ({ row }) => {
       const score = parseInt(row.getValue("score"));
+      const be_status = row.getValue("status") || "Not Found";
       let color: string = "";
       const status = row.getValue("status");
       const name: string =
-        status === "accepted" && !score
+        be_status === "assessment_evaluated"
+          ? "Assessment Evaluated"
+          : be_status === "assessment_done"
+          ? "Assessment Done"
+          : status === "accepted" && !score
           ? "Processing"
           : score > 40
           ? "Eligible"
           : "Not Eligible";
-      if (score > 40) {
-        // name = "Eligible";
+
+      if (be_status === "assessment_evaluated") {
+        color = "text-blue-500";
+      } else if (be_status === "assessment_done") {
+        color = "text-yellow-400";
+      } else if (status === "accepted" && !score) {
+        color = "text-orange-400";
+      } else if (score > 40) {
         color = "text-green-400";
       } else {
-        // name = "Not Eligible";
         color = "text-red-400";
       }
 
@@ -89,8 +107,8 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
     header: () => <div className="">Assessment score</div>,
     cell: ({ row }) => {
       const finalscore = row.original.assessment_score;
-
-      const sc: string = finalscore ? `${finalscore}` : "--";
+      const sc: string =
+        finalscore !== undefined ? `${finalscore}` : "Not Found";
       return <div className="font-medium">{sc}</div>;
     },
   },
@@ -99,6 +117,8 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
     enableHiding: false,
     cell: ({ row }) => {
       const candidateid = row.original.id;
+      // const assessment_score = row.original.assessment_score;
+      const be_status = row.original.status;
       console.log(row.original);
       return (
         <DropdownMenu>
@@ -122,24 +142,43 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
             >
               Profile View
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                redirect(
-                  `/assessment?role_id=${role_id}&profile_id=${candidateid}`
-                );
-              }}
-            >
-              View Assessment Page
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                redirect(
-                  `/assessment-result?role_id=${role_id}&profile_id=${candidateid}`
-                );
-              }}
-            >
-              Evaluate Assessment
-            </DropdownMenuItem>
+            {be_status === "accepted" ? (
+              <DropdownMenuItem
+                onClick={() => {
+                  const assessmentLink = `/assessment?role_id=${role_id}&profile_id=${candidateid}`;
+                  navigator.clipboard
+                    .writeText(assessmentLink)
+                    .then(() => {
+                      alert("Assessment link copied to clipboard");
+                    })
+                    .catch((err) => {
+                      console.error("Failed to copy text: ", err);
+                    });
+                }}
+              >
+                Copy Assessment Link
+              </DropdownMenuItem>
+            ) : null}
+            {/* {be_status === "assessment-done" ? (
+              <DropdownMenuItem
+                onClick={() => {
+                  router.push(
+                    `/assessment-result?role_id=${role_id}&profile_id=${candidateid}`
+                  );
+                }}
+              >
+                Evaluate Assessment
+              </DropdownMenuItem>
+            ) : null} */}
+            {be_status !== "assessment_evaluated" ? (
+              <DropdownMenuItem>
+                <Link
+                  href={`/assessment-result?role_id=${role_id}&profile_id=${candidateid}`}
+                >
+                  Evaluate Assessment
+                </Link>
+              </DropdownMenuItem>
+            ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -172,45 +211,52 @@ const DataTable: React.FC<Props> = ({
     pageSize: pageSize,
   });
 
-  // Use useCallback to memoize the fetch function
-  const fetchJD = useCallback(async () => {
-    if (setLoading) setLoading(true);
+  const fetchJD = useCallback(
+    async (initialLoad: boolean = false): Promise<void> => {
+      if (initialLoad && setLoading) setLoading(true);
 
-    try {
-      const response = await fetch(
-        "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
-        {
-          method: "POST",
-          headers: {
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
-          },
-          body: JSON.stringify({
-            requestType: "getProfiles",
-            role_id: roleid,
-          }),
+      try {
+        const response = await fetch(
+          "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
+          {
+            method: "POST",
+            headers: {
+              Authorization:
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
+            },
+            body: JSON.stringify({
+              requestType: "getProfiles",
+              role_id: roleid,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
         }
-      );
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
+        const data: Summary[] = await response.json();
+        console.log(data);
+        setData(data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        if (initialLoad && setLoading) setLoading(false);
       }
-
-      const data = await response.json();
-      console.log(data);
-      setData(data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      if (setLoading) setLoading(false);
-    }
-  }, [roleid, setLoading]);
+    },
+    [roleid, setLoading]
+  );
 
   useEffect(() => {
-    fetchJD();
+    fetchJD(true);
+
+    const intervalId = setInterval(() => {
+      fetchJD();
+    }, 10000);
+
+    return () => clearInterval(intervalId);
   }, [fetchJD, roleid, refreshTrigger]);
 
-  // Create columns with the current roleid
   const columns = createColumns(roleid);
 
   const table = useReactTable({
