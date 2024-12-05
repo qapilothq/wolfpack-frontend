@@ -45,7 +45,8 @@ const CandidateAssessment: React.FC = () => {
       try {
         setIsLoading(true);
 
-        const createResponse = await fetch(
+        // Call createProfileQuestions first
+        const createProfileQuestions = await fetch(
           "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
           {
             method: "POST",
@@ -61,9 +62,11 @@ const CandidateAssessment: React.FC = () => {
           }
         );
 
-        console.log("createResponse", createResponse);
+        const profileQuestions = await createProfileQuestions.json();
+        console.log("profilequestions", profileQuestions);
 
-        const questionsResponse = await fetch(
+        // Then call getAllQuestions
+        const getAllQuestions = await fetch(
           "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
           {
             method: "POST",
@@ -79,24 +82,59 @@ const CandidateAssessment: React.FC = () => {
           }
         );
 
-        if (!questionsResponse.ok) {
+        if (!getAllQuestions.ok) {
           throw new Error("Failed to fetch questions");
         }
 
-        const data = await questionsResponse.json();
+        const data = await getAllQuestions.json();
         console.log(data);
-        const combinedQuestions =
-          Array.isArray(data.customQuestions) && data.customQuestions.length > 0
-            ? data.customQuestions.map((question: string) => ({ question }))
-            : Array.isArray(data.roleQuestions) && data.roleQuestions.length > 0
-            ? data.roleQuestions.map((question: string) => ({ question }))
-            : Array.isArray(data.profileQuestions)
-            ? data.profileQuestions.map((question: string) => ({ question }))
-            : [];
+        // const combinedQuestions = [
+        //   ...(data.profileQuestions && data.profileQuestions.length > 0
+        //     ? data.profileQuestions.map((question: string) => ({ question }))
+        //     : []),
+
+        //   ...(data.customQuestions && data.customQuestions.length > 0
+        //     ? data.customQuestions.map((question: string) => ({ question }))
+        //     : data.roleQuestions && data.roleQuestions.length > 0
+        //     ? data.roleQuestions.map((question: string) => ({ question }))
+        //     : []),
+        // ];
+        const combinedQuestions = [];
+
+        if (data.profileQuestions && data.profileQuestions.length > 0) {
+          combinedQuestions.push(
+            ...data.profileQuestions.map((question: string) => ({
+              question,
+            }))
+          );
+        } else if (
+          profileQuestions.questions &&
+          profileQuestions.questions.length > 0
+        ) {
+          combinedQuestions.push(
+            ...profileQuestions.questions.map((question: string) => ({
+              question,
+            }))
+          );
+        }
+
+        if (data.customQuestions && data.customQuestions.length > 0) {
+          combinedQuestions.push(
+            ...data.customQuestions.map((question: string) => ({
+              question,
+            }))
+          );
+        } else if (data.roleQuestions && data.roleQuestions.length > 0) {
+          combinedQuestions.push(
+            ...data.roleQuestions.map((question: string) => ({
+              question,
+            }))
+          );
+        }
+        console.log("combinedQuestions:", combinedQuestions);
 
         setAssessmentQuestions(combinedQuestions);
 
-        // Initialize responses array with empty answers
         setResponses(
           combinedQuestions.map((q: AssessmentQuestion) => ({
             question: q.question,
@@ -142,6 +180,10 @@ const CandidateAssessment: React.FC = () => {
     checkAssessmentTaken();
   }, [role_id, profile_id]);
 
+  useEffect(() => {
+    console.log("assessmentQuestions", assessmentQuestions);
+  }, [assessmentQuestions]);
+
   const handleResponseChange = (index: number, response: string) => {
     const wordCount = response
       .trim()
@@ -164,7 +206,7 @@ const CandidateAssessment: React.FC = () => {
   };
 
   const handleCopyToClipboard = () => {
-    const url = window.location.href; // Get the current page URL
+    const url = window.location.href;
     navigator.clipboard
       .writeText(url)
       .then(() => {

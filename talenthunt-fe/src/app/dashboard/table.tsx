@@ -45,7 +45,8 @@ export type Summary = {
     | "accepted"
     | "rejected"
     | "assessment_evaluated"
-    | "assessment_submitted";
+    | "assessment_submitted"
+    | "assessment_generated";
   email: string;
   role_id: number;
 };
@@ -151,7 +152,9 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
             >
               Profile View
             </DropdownMenuItem>
-            {be_status === "accepted" || be_status === null ? (
+            {be_status === "accepted" ||
+            be_status === null ||
+            be_status === "assessment_generated" ? (
               <DropdownMenuItem
                 onClick={() => {
                   const baseUrl = window.location.origin;
