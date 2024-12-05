@@ -240,7 +240,7 @@ const Assessment: React.FC = () => {
                 {isConfiguring ? (
                   <>
                     <LoaderIcon className="mr-2 animate-spin" />
-                    Configuring...
+                    Configuring....
                   </>
                 ) : (
                   "Configure Assessment"
