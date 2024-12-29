@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import useStore from "../stores/store";
+import Link from "next/link";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -137,6 +138,17 @@ const Login: React.FC = () => {
                 {error && (
                   <div className="mt-4 text-red-600 text-center">{error}</div>
                 )}
+                <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+                  <p className="text-gray-600 mb-4">
+                    New to Wolfpack?
+                    <Link
+                      href="https://forms.gle/sTeXKu4U6TAzk5bKA"
+                      className="text-primary font-bold hover:underline ml-2"
+                    >
+                      Get Early Acess
+                    </Link>
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </div>

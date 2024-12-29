@@ -89,7 +89,7 @@ const Index = () => {
               console.log("Profile created successfully");
 
               setRefreshTable((prev) => prev + 1);
-              setIsLoading(false); // Set loading to false after refresh
+              setIsLoading(false);
             }
             setIsUploading(false);
 
@@ -158,6 +158,7 @@ const Index = () => {
                 style={{ display: "none" }}
                 onChange={handleFileChange}
                 disabled={!dropdownValue}
+                accept=".pdf, .zip"
               />
               <Button
                 onClick={() => document.getElementById("resume")?.click()}
@@ -171,6 +172,10 @@ const Index = () => {
         </div>
         {dropdownValue && (
           <div className="max-w-full md:max-w-4xl mx-auto bg-white shadow-xl rounded-2xl">
+            <p className="text-sm text-gray-500 mb-2">
+              You can bulk upload resumes by selecting a ZIP file containing
+              multiple PDF documents.
+            </p>
             <DataTable
               roleid={dropdownValue}
               refreshTrigger={refreshTable}

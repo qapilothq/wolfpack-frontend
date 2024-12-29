@@ -167,343 +167,349 @@ const CandidateProfile: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 w-full flex flex-col p-4 md:p-8">
-      <div className="container mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
-          {/* Personal Information Card */}
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <div className="flex items-center">
-                <TargetIcon className="mr-2 text-blue-500" />
-                <CardTitle>Personal Information</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p>
-                  <strong>Name:</strong> {candidateData.personalInfo.name}
-                </p>
-                <p>
-                  <strong>Phone:</strong> {candidateData.personalInfo.phone}
-                </p>
-                <p>
-                  <strong>Email:</strong> {candidateData.personalInfo.email}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+    <div className=" max-h-[90vh] w-full bg-gray-100 py-8 overflow-y-auto">
+      <div className="w-full flex flex-col  md:p-8">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
+            {/* Personal Information Card */}
+            <Card className="hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <div className="flex items-center">
+                  <TargetIcon className="mr-2 text-blue-500" />
+                  <CardTitle>Personal Information</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p>
+                    <strong>Name:</strong> {candidateData.personalInfo.name}
+                  </p>
+                  <p>
+                    <strong>Phone:</strong> {candidateData.personalInfo.phone}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {candidateData.personalInfo.email}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Profile Score Card*/}
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardContent>
-              <ChartContainer
-                config={profileScoreChartConfig}
-                className="mx-auto aspect-square max-h-[250px]"
-              >
-                <RadialBarChart
-                  data={[{ score: getProf?.score, fill: "var(--color-score)" }]}
-                  startAngle={0}
-                  endAngle={200}
-                  innerRadius={80}
-                  outerRadius={110}
+            {/* Profile Score Card*/}
+            <Card className="hover:shadow-lg transition-shadow duration-300">
+              <CardContent>
+                <ChartContainer
+                  config={profileScoreChartConfig}
+                  className="mx-auto aspect-square max-h-[250px]"
                 >
-                  <PolarGrid
-                    gridType="circle"
-                    radialLines={false}
-                    stroke="none"
-                    className="first:fill-muted last:fill-background"
-                    polarRadius={[86, 74]}
-                  />
-                  <RadialBar dataKey="score" background cornerRadius={10} />
-                  <PolarRadiusAxis
-                    tick={false}
-                    tickLine={false}
-                    axisLine={false}
+                  <RadialBarChart
+                    data={[
+                      { score: getProf?.score, fill: "var(--color-score)" },
+                    ]}
+                    startAngle={0}
+                    endAngle={200}
+                    innerRadius={80}
+                    outerRadius={110}
                   >
-                    <Label
-                      content={({ viewBox }) => {
-                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                          return (
-                            <text
-                              x={viewBox.cx}
-                              y={viewBox.cy}
-                              textAnchor="middle"
-                              dominantBaseline="middle"
-                            >
-                              <tspan
-                                x={viewBox.cx}
-                                y={viewBox.cy}
-                                className="fill-foreground text-4xl font-bold"
-                              >
-                                {getProf?.score?.toLocaleString()}
-                              </tspan>
-                              <tspan
-                                x={viewBox.cx}
-                                y={(viewBox.cy || 0) + 24}
-                                className="fill-muted-foreground"
-                              >
-                                Profile Score
-                              </tspan>
-                            </text>
-                          );
-                        }
-                      }}
+                    <PolarGrid
+                      gridType="circle"
+                      radialLines={false}
+                      stroke="none"
+                      className="first:fill-muted last:fill-background"
+                      polarRadius={[86, 74]}
                     />
-                  </PolarRadiusAxis>
-                </RadialBarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          {/* Assessment Score Card */}
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardContent>
-              <ChartContainer
-                config={profileScoreChartConfig}
-                className="mx-auto aspect-square max-h-[250px]"
-              >
-                <RadialBarChart
-                  data={[
-                    {
-                      score: getProf?.assessment_score ?? 0,
-                      fill: "var(--color-score)",
-                    },
-                  ]}
-                  startAngle={0}
-                  endAngle={100}
-                  innerRadius={80}
-                  outerRadius={110}
-                >
-                  <PolarGrid
-                    gridType="circle"
-                    radialLines={false}
-                    stroke="none"
-                    className="first:fill-muted last:fill-background"
-                    polarRadius={[86, 74]}
-                  />
-                  <RadialBar dataKey="score" background cornerRadius={10} />
-                  <PolarRadiusAxis
-                    tick={false}
-                    tickLine={false}
-                    axisLine={false}
-                  >
-                    <Label
-                      className="flex item-center justify-center"
-                      content={({ viewBox }) => {
-                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                          return (
-                            <text
-                              x={viewBox.cx}
-                              y={viewBox.cy}
-                              textAnchor="middle"
-                              dominantBaseline="middle"
-                            >
-                              <tspan
-                                x={viewBox.cx}
-                                y={viewBox.cy}
-                                className="fill-foreground text-4xl font-bold "
-                              >
-                                {getProf?.assessment_score?.toLocaleString() ??
-                                  "0"}
-                              </tspan>
-
-                              <tspan
-                                x={viewBox.cx}
-                                y={(viewBox.cy || 0) + 24}
-                                className="fill-muted-foreground"
-                              >
-                                {getProf?.assessment_score
-                                  ? "Assessment Score"
-                                  : "Assessment is pending"}
-                              </tspan>
-                            </text>
-                          );
-                        }
-                      }}
-                    />
-                  </PolarRadiusAxis>
-                </RadialBarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          {/* Work Experience Card */}
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <div className="flex items-center">
-                <BriefcaseIcon className="mr-2 text-green-500" />
-                <CardTitle>Work Experience</CardTitle>
-              </div>
-            </CardHeader>
-            <ScrollArea className="h-[200px]">
-              <CardContent>
-                {candidateData.workExperience.length > 0 ? (
-                  candidateData.workExperience.map((value, index) => (
-                    <div key={index} className="mb-4">
-                      <p className="font-semibold">{value.Role}</p>
-                      <p className="text-gray-600">{value["Company Name"]}</p>
-                      <p className="text-sm text-gray-500">{value.Duration}</p>
-                    </div>
-                  ))
-                ) : (
-                  <p>Not Found</p>
-                )}
-              </CardContent>
-            </ScrollArea>
-          </Card>
-
-          {/* Education Card */}
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <div className="flex items-center">
-                <BookIcon className="mr-2 text-purple-500" />
-                <CardTitle>Education</CardTitle>
-              </div>
-            </CardHeader>
-            <ScrollArea className="h-[200px]">
-              <CardContent>
-                <p>{candidateData.education}</p>
-              </CardContent>
-            </ScrollArea>
-          </Card>
-
-          {/* Projects Card */}
-          <Card className="md:col-span-2 lg:col-span-1 hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <div className="flex items-center">
-                <KanbanIcon className="mr-2 text-red-500" />
-                <CardTitle>Projects</CardTitle>
-              </div>
-            </CardHeader>
-            <ScrollArea className="h-[200px]">
-              <CardContent>
-                {candidateData.projects.length > 0 ? (
-                  candidateData.projects.map((value, index) => (
-                    <div key={index} className="mb-4">
-                      <p className="font-semibold">{value["Project Name"]}</p>
-                      <p className="text-gray-600">
-                        {value["Project Description"]}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <p>Not Found</p>
-                )}
-              </CardContent>
-            </ScrollArea>
-          </Card>
-
-          {/* Skills Card */}
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <div className="flex items-center">
-                <TargetIcon className="mr-2 text-orange-500" />
-                <CardTitle>Skills</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {candidateData.skills.length > 0 ? (
-                  candidateData.skills.map((skill, index) => (
-                    <span
-                      key={index}
-                      className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded"
+                    <RadialBar dataKey="score" background cornerRadius={10} />
+                    <PolarRadiusAxis
+                      tick={false}
+                      tickLine={false}
+                      axisLine={false}
                     >
-                      {skill}
-                    </span>
-                  ))
-                ) : (
-                  <span>Not Found</span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Match Results Card */}
-          <Card className="md:col-span-2 lg:col-span-1 hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <div className="flex items-center">
-                <SparkleIcon className="mr-2 text-red-500" />
-                <CardTitle>Match Results for role - {roleName} </CardTitle>
-              </div>
-            </CardHeader>
-            <ScrollArea className="h-[200px]">
-              <CardContent>
-                {getProf?.match_reasons?.map((value, index) => (
-                  <div key={index} className="mb-4">
-                    <p className="text-gray-600">{value}</p>
-                  </div>
-                ))}
+                      <Label
+                        content={({ viewBox }) => {
+                          if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                            return (
+                              <text
+                                x={viewBox.cx}
+                                y={viewBox.cy}
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                              >
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={viewBox.cy}
+                                  className="fill-foreground text-4xl font-bold"
+                                >
+                                  {getProf?.score?.toLocaleString()}
+                                </tspan>
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={(viewBox.cy || 0) + 24}
+                                  className="fill-muted-foreground"
+                                >
+                                  Profile Score
+                                </tspan>
+                              </text>
+                            );
+                          }
+                        }}
+                      />
+                    </PolarRadiusAxis>
+                  </RadialBarChart>
+                </ChartContainer>
               </CardContent>
-            </ScrollArea>
-          </Card>
-          {/* Red Flags */}
-          <Card className="md:col-span-2 lg:col-span-1 hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <div className="flex items-center">
-                <FlagIcon className="mr-2 text-red-500" />
-                <CardTitle>Red Flags for the Candidate</CardTitle>
-              </div>
-            </CardHeader>
-            <ScrollArea className="h-[200px]">
-              <CardContent>
-                {getProf?.red_flags?.high &&
-                  getProf?.red_flags?.high?.length > 1 && (
-                    <div key="1" className="mb-4">
-                      <p className="font-semibold">High</p>
-                      {getProf?.red_flags.high.map((value, index) => (
-                        <p key={index} className="text-gray-600">
-                          {value}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                {getProf?.red_flags?.medium &&
-                  getProf?.red_flags?.medium?.length > 1 && (
-                    <div key="2" className="mb-4">
-                      <p className="font-semibold">Medium</p>
-                      {getProf?.red_flags?.medium.map((value, index) => (
-                        <p key={index} className="text-gray-600">
-                          {value}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                {getProf?.red_flags?.low &&
-                  getProf?.red_flags?.low?.length > 1 && (
-                    <div key="3" className="mb-4">
-                      <p className="font-semibold">Low</p>
-                      {getProf?.red_flags?.low.map((value, index) => (
-                        <p key={index} className="text-gray-600">
-                          {value}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-              </CardContent>
-            </ScrollArea>
-          </Card>
-        </div>
+            </Card>
 
-        {/* Action Buttons */}
-        <div className="flex justify-center mt-8 space-x-4">
-          <Button
-            variant="outline"
-            className="hover:bg-gray-100"
-            onClick={() => alert("Assessment Link Sent to the candidate!")}
-          >
-            Send Assessment Link
-          </Button>
-          <Button
-            className="bg-primary hover:bg-primary-dark"
-            onClick={() => {
-              redirect(
-                `assessment-result?role_id=${role_id}&profile_id=${profile_id}`
-              );
-            }}
-          >
-            Evaluate Assessment
-          </Button>
+            {/* Assessment Score Card */}
+            <Card className="hover:shadow-lg transition-shadow duration-300">
+              <CardContent>
+                <ChartContainer
+                  config={profileScoreChartConfig}
+                  className="mx-auto aspect-square max-h-[250px]"
+                >
+                  <RadialBarChart
+                    data={[
+                      {
+                        score: getProf?.assessment_score ?? 0,
+                        fill: "var(--color-score)",
+                      },
+                    ]}
+                    startAngle={0}
+                    endAngle={100}
+                    innerRadius={80}
+                    outerRadius={110}
+                  >
+                    <PolarGrid
+                      gridType="circle"
+                      radialLines={false}
+                      stroke="none"
+                      className="first:fill-muted last:fill-background"
+                      polarRadius={[86, 74]}
+                    />
+                    <RadialBar dataKey="score" background cornerRadius={10} />
+                    <PolarRadiusAxis
+                      tick={false}
+                      tickLine={false}
+                      axisLine={false}
+                    >
+                      <Label
+                        className="flex item-center justify-center"
+                        content={({ viewBox }) => {
+                          if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                            return (
+                              <text
+                                x={viewBox.cx}
+                                y={viewBox.cy}
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                              >
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={viewBox.cy}
+                                  className="fill-foreground text-4xl font-bold "
+                                >
+                                  {getProf?.assessment_score?.toLocaleString() ??
+                                    "0"}
+                                </tspan>
+
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={(viewBox.cy || 0) + 24}
+                                  className="fill-muted-foreground"
+                                >
+                                  {getProf?.assessment_score
+                                    ? "Assessment Score"
+                                    : "Assessment is pending"}
+                                </tspan>
+                              </text>
+                            );
+                          }
+                        }}
+                      />
+                    </PolarRadiusAxis>
+                  </RadialBarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            {/* Work Experience Card */}
+            <Card className="hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <div className="flex items-center">
+                  <BriefcaseIcon className="mr-2 text-green-500" />
+                  <CardTitle>Work Experience</CardTitle>
+                </div>
+              </CardHeader>
+              <ScrollArea className="h-[200px]">
+                <CardContent>
+                  {candidateData.workExperience.length > 0 ? (
+                    candidateData.workExperience.map((value, index) => (
+                      <div key={index} className="mb-4">
+                        <p className="font-semibold">{value.Role}</p>
+                        <p className="text-gray-600">{value["Company Name"]}</p>
+                        <p className="text-sm text-gray-500">
+                          {value.Duration}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p>Not Found</p>
+                  )}
+                </CardContent>
+              </ScrollArea>
+            </Card>
+
+            {/* Education Card */}
+            <Card className="hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <div className="flex items-center">
+                  <BookIcon className="mr-2 text-purple-500" />
+                  <CardTitle>Education</CardTitle>
+                </div>
+              </CardHeader>
+              <ScrollArea className="h-[200px]">
+                <CardContent>
+                  <p>{candidateData.education}</p>
+                </CardContent>
+              </ScrollArea>
+            </Card>
+
+            {/* Projects Card */}
+            <Card className="md:col-span-2 lg:col-span-1 hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <div className="flex items-center">
+                  <KanbanIcon className="mr-2 text-red-500" />
+                  <CardTitle>Projects</CardTitle>
+                </div>
+              </CardHeader>
+              <ScrollArea className="h-[200px]">
+                <CardContent>
+                  {candidateData.projects.length > 0 ? (
+                    candidateData.projects.map((value, index) => (
+                      <div key={index} className="mb-4">
+                        <p className="font-semibold">{value["Project Name"]}</p>
+                        <p className="text-gray-600">
+                          {value["Project Description"]}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p>Not Found</p>
+                  )}
+                </CardContent>
+              </ScrollArea>
+            </Card>
+
+            {/* Skills Card */}
+            <Card className="hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <div className="flex items-center">
+                  <TargetIcon className="mr-2 text-orange-500" />
+                  <CardTitle>Skills</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {candidateData.skills.length > 0 ? (
+                    candidateData.skills.map((skill, index) => (
+                      <span
+                        key={index}
+                        className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded"
+                      >
+                        {skill}
+                      </span>
+                    ))
+                  ) : (
+                    <span>Not Found</span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Match Results Card */}
+            <Card className="md:col-span-2 lg:col-span-1 hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <div className="flex items-center">
+                  <SparkleIcon className="mr-2 text-red-500" />
+                  <CardTitle>Match Results for role - {roleName} </CardTitle>
+                </div>
+              </CardHeader>
+              <ScrollArea className="h-[200px]">
+                <CardContent>
+                  {getProf?.match_reasons?.map((value, index) => (
+                    <div key={index} className="mb-4">
+                      <p className="text-gray-600">{value}</p>
+                    </div>
+                  ))}
+                </CardContent>
+              </ScrollArea>
+            </Card>
+            {/* Red Flags */}
+            <Card className="md:col-span-2 lg:col-span-1 hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <div className="flex items-center">
+                  <FlagIcon className="mr-2 text-red-500" />
+                  <CardTitle>Red Flags for the Candidate</CardTitle>
+                </div>
+              </CardHeader>
+              <ScrollArea className="h-[200px]">
+                <CardContent>
+                  {getProf?.red_flags?.high &&
+                    getProf?.red_flags?.high?.length > 1 && (
+                      <div key="1" className="mb-4">
+                        <p className="font-semibold">High</p>
+                        {getProf?.red_flags.high.map((value, index) => (
+                          <p key={index} className="text-gray-600">
+                            {value}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  {getProf?.red_flags?.medium &&
+                    getProf?.red_flags?.medium?.length > 1 && (
+                      <div key="2" className="mb-4">
+                        <p className="font-semibold">Medium</p>
+                        {getProf?.red_flags?.medium.map((value, index) => (
+                          <p key={index} className="text-gray-600">
+                            {value}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  {getProf?.red_flags?.low &&
+                    getProf?.red_flags?.low?.length > 1 && (
+                      <div key="3" className="mb-4">
+                        <p className="font-semibold">Low</p>
+                        {getProf?.red_flags?.low.map((value, index) => (
+                          <p key={index} className="text-gray-600">
+                            {value}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                </CardContent>
+              </ScrollArea>
+            </Card>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-center mt-8 space-x-4">
+            <Button
+              variant="outline"
+              className="hover:bg-gray-100"
+              onClick={() => alert("Assessment Link Sent to the candidate!")}
+            >
+              Send Assessment Link
+            </Button>
+            <Button
+              className="bg-primary hover:bg-primary-dark"
+              onClick={() => {
+                redirect(
+                  `assessment-result?role_id=${role_id}&profile_id=${profile_id}`
+                );
+              }}
+            >
+              Evaluate Assessment
+            </Button>
+          </div>
         </div>
       </div>
     </div>
