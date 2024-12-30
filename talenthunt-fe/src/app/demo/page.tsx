@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileUp, Search, ShieldCheck, RotateCcw, Loader2 } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Types and Interfaces
 type Step = 1 | 2 | 3;
@@ -295,67 +294,71 @@ const ResumeMatchDemo: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 w-full flex flex-col">
-      <ScrollArea className="h-full">
-        <main className="flex-grow w-full flex flex-col items-center justify-center p-4 md:p-6">
-          <div className="w-full max-w-4xl flex flex-col items-center">
-            <div className="w-full flex flex-col md:flex-row justify-between items-center mb-8 px-4">
-              <h2 className="text-2xl md:text-4xl text-gray-900 font-extrabold font-mono mb-4 md:mb-0">
-                Resume Matching Demo
-              </h2>
-              {currentStep > 1 && (
-                <Button
-                  variant="outline"
-                  onClick={resetForm}
-                  className="flex items-center gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Reset
-                </Button>
-              )}
-            </div>
+    <div className="min-h-screen bg-gray-100">
+      <div className="container mx-auto px-4 py-6 h-full">
+        <div className="flex flex-col space-y-6">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <h2 className="text-2xl md:text-4xl text-gray-900 font-extrabold font-mono">
+              Resume Matching Demo
+            </h2>
+            {currentStep > 1 && (
+              <Button
+                variant="outline"
+                onClick={resetForm}
+                className="flex items-center gap-2"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Reset
+              </Button>
+            )}
+          </div>
 
-            <StepIndicator currentStep={currentStep} totalSteps={3} />
+          {/* Step Indicator */}
+          <StepIndicator currentStep={currentStep} totalSteps={3} />
 
-            <Card className="w-full shadow-lg relative">
-              {isAnyLoading && (
-                <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
-                  <div className="flex flex-col items-center gap-4">
-                    <LoadingSpinner size={32} />
-                    <p className="text-gray-600">
-                      {loadingStates.createRole && "Creating role..."}
-                      {loadingStates.uploadResume && "Uploading resume..."}
-                      {loadingStates.fetchProfile && "Analyzing profile..."}
-                    </p>
-                  </div>
+          {/* Main Content Card */}
+          <Card className="w-full shadow-lg relative">
+            {isAnyLoading && (
+              <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
+                <div className="flex flex-col items-center gap-4">
+                  <LoadingSpinner size={32} />
+                  <p className="text-gray-600">
+                    {loadingStates.createRole && "Creating role..."}
+                    {loadingStates.uploadResume && "Uploading resume..."}
+                    {loadingStates.fetchProfile && "Analyzing profile..."}
+                  </p>
                 </div>
-              )}
+              </div>
+            )}
 
-              <CardHeader>
-                <CardTitle className="flex items-center text-xl md:text-2xl">
-                  {currentStep === 1 && (
-                    <>
-                      <Search className="mr-2 text-blue-500" />
-                      Enter Job Description
-                    </>
-                  )}
-                  {currentStep === 2 && (
-                    <>
-                      <FileUp className="mr-2 text-blue-500" />
-                      Upload Resume
-                    </>
-                  )}
-                  {currentStep === 3 && (
-                    <>
-                      <ShieldCheck className="mr-2 text-blue-500" />
-                      Match Results
-                    </>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+            <CardHeader>
+              <CardTitle className="flex items-center text-xl md:text-2xl">
                 {currentStep === 1 && (
-                  <div className="flex flex-col">
+                  <>
+                    <Search className="mr-2 text-blue-500" />
+                    Enter Job Description
+                  </>
+                )}
+                {currentStep === 2 && (
+                  <>
+                    <FileUp className="mr-2 text-blue-500" />
+                    Upload Resume
+                  </>
+                )}
+                {currentStep === 3 && (
+                  <>
+                    <ShieldCheck className="mr-2 text-blue-500" />
+                    Match Results
+                  </>
+                )}
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-6">
+              {currentStep === 1 && (
+                <div className="flex flex-col space-y-4">
+                  <div>
                     <Label
                       htmlFor="roleName"
                       className="flex items-center gap-3"
@@ -374,19 +377,22 @@ const ResumeMatchDemo: React.FC = () => {
                         }))
                       }
                     />
+                  </div>
+
+                  <div>
                     <Label
                       htmlFor="jobDescription"
-                      className="flex items-center gap-3 mt-4"
+                      className="flex items-center gap-3"
                     >
                       Job Description
                       <span className="text-sm text-gray-500">
                         (minimum {MIN_JD_LENGTH} characters required)
                       </span>
                     </Label>
-                    <div className="mt-2 w-full h-[300px] overflow-auto border rounded-md">
+                    <div className="mt-2 relative h-64 md:h-80">
                       <textarea
                         id="jobDescription"
-                        className="w-full h-full p-3 resize-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full h-full p-3 resize-none border rounded-md focus:ring-2 focus:ring-blue-500"
                         placeholder={`Paste the full job description here (minimum ${MIN_JD_LENGTH} characters)...`}
                         value={formData.jobDescription}
                         onChange={(e) =>
@@ -397,117 +403,119 @@ const ResumeMatchDemo: React.FC = () => {
                         }
                       />
                     </div>
-                    <div className="mt-4 flex justify-end">
-                      <Button
-                        onClick={validateAndProceed}
-                        disabled={
-                          formData.jobDescription.length < MIN_JD_LENGTH ||
-                          !formData.roleName.trim() ||
-                          isAnyLoading
-                        }
-                        className="flex items-center gap-2"
-                      >
-                        {loadingStates.createRole ? (
-                          <LoadingSpinner />
-                        ) : (
-                          "Next Step"
-                        )}
-                      </Button>
-                    </div>
                   </div>
-                )}
 
-                {currentStep === 2 && (
-                  <div className="flex flex-col">
-                    <div
-                      className="w-full h-[300px] border-2 border-dashed rounded-md p-6"
-                      onDrop={handleFileDrop}
-                      onDragOver={(e) => e.preventDefault()}
+                  <div className="flex justify-end pt-4">
+                    <Button
+                      onClick={validateAndProceed}
+                      disabled={
+                        formData.jobDescription.length < MIN_JD_LENGTH ||
+                        !formData.roleName.trim() ||
+                        isAnyLoading
+                      }
+                      className="flex items-center gap-2"
                     >
-                      <Input
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        className="hidden"
-                        id="resumeUpload"
-                        onChange={handleFileUpload}
-                      />
-                      <label
-                        htmlFor="resumeUpload"
-                        className="cursor-pointer flex flex-col items-center h-full justify-center"
-                      >
-                        <FileUp className="w-12 h-12 text-gray-400 mb-4" />
-                        <p className="text-gray-600 text-center">
-                          {resumeFile
-                            ? `Selected: ${resumeFile.name}`
-                            : "Drag & drop or click to upload resume"}
-                        </p>
-                      </label>
-                    </div>
-                    <div className="mt-4 flex justify-end">
-                      <Button
-                        onClick={handleMatch}
-                        disabled={!resumeFile || isAnyLoading}
-                        className="flex items-center gap-2"
-                      >
-                        {loadingStates.uploadResume ||
-                        loadingStates.fetchProfile ? (
-                          <>
-                            <LoadingSpinner />
-                            Analyzing
-                          </>
-                        ) : (
-                          "Analyze Match"
-                        )}
-                      </Button>
-                    </div>
+                      {loadingStates.createRole ? (
+                        <LoadingSpinner />
+                      ) : (
+                        "Next Step"
+                      )}
+                    </Button>
                   </div>
-                )}
+                </div>
+              )}
 
-                {currentStep === 3 && matchResults && (
-                  <div className="space-y-6">
-                    <div className="flex flex-col md:flex-row justify-between gap-4">
-                      <p className="text-lg font-semibold">
-                        {matchResults.name}
+              {currentStep === 2 && (
+                <div className="flex flex-col space-y-4">
+                  <div
+                    className="w-full h-64 border-2 border-dashed rounded-md"
+                    onDrop={handleFileDrop}
+                    onDragOver={(e) => e.preventDefault()}
+                  >
+                    <Input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      className="hidden"
+                      id="resumeUpload"
+                      onChange={handleFileUpload}
+                    />
+                    <label
+                      htmlFor="resumeUpload"
+                      className="cursor-pointer flex flex-col items-center justify-center h-full"
+                    >
+                      <FileUp className="w-12 h-12 text-gray-400 mb-4" />
+                      <p className="text-gray-600 text-center px-4">
+                        {resumeFile
+                          ? `Selected: ${resumeFile.name}`
+                          : "Drag & drop or click to upload resume"}
                       </p>
-                      <p className="text-lg font-semibold">
-                        Profile Score:{" "}
-                        <span
-                          className={
-                            matchResults.profileScore > 40
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }
-                        >
-                          {matchResults.profileScore}%
+                    </label>
+                  </div>
+
+                  <div className="flex justify-end pt-4">
+                    <Button
+                      onClick={handleMatch}
+                      disabled={!resumeFile || isAnyLoading}
+                      className="flex items-center gap-2"
+                    >
+                      {loadingStates.uploadResume ||
+                      loadingStates.fetchProfile ? (
+                        <>
+                          <LoadingSpinner />
+                          Analyzing
+                        </>
+                      ) : (
+                        "Analyze Match"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {currentStep === 3 && matchResults && (
+                <div className="space-y-6">
+                  <div className="flex flex-col md:flex-row justify-between gap-4">
+                    <p className="text-lg font-semibold break-words">
+                      {matchResults.name}
+                    </p>
+                    <p className="text-lg font-semibold whitespace-nowrap">
+                      Profile Score:{" "}
+                      <span
+                        className={
+                          matchResults.profileScore > 40
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }
+                      >
+                        {matchResults.profileScore}%
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg bg-green-50 border-green-200 border">
+                      <div className="flex flex-col space-y-2">
+                        <span className="font-semibold">Match Reasons</span>
+                        <span className="text-green-600 break-words">
+                          {matchResults.matchReasons}
                         </span>
-                      </p>
-                    </div>
-
-                    <div className="grid gap-4">
-                      <div className="p-4 rounded-lg bg-green-50 border-green-200 border">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                          <span className="font-semibold">Match Reasons</span>
-                          <span className="text-green-600">
-                            {matchResults.matchReasons}
-                          </span>
-                        </div>
                       </div>
-                      <div className="p-4 rounded-lg bg-red-50 border-red-200 border">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                          <span className="font-semibold">Flag Reasons</span>
-                          <span className="text-red-600">
-                            {matchResults.flagReasons}
-                          </span>
-                        </div>
+                    </div>
+                    <div className="p-4 rounded-lg bg-red-50 border-red-200 border">
+                      <div className="flex flex-col space-y-2">
+                        <span className="font-semibold">Flag Reasons</span>
+                        <span className="text-red-600 break-words">
+                          {matchResults.flagReasons}
+                        </span>
                       </div>
                     </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </main>
-      </ScrollArea>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };
