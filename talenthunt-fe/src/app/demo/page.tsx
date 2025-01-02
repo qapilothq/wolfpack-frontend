@@ -294,9 +294,9 @@ const ResumeMatchDemo: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="container mx-auto px-4 py-6 h-full">
-        <div className="flex flex-col space-y-6">
+    <div className="min-h-screen bg-gray-100  w-full">
+      <div className="w-full h-full container mx-auto px-4 py-6">
+        <div className="flex flex-col space-y-6 h-full">
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <h2 className="text-2xl md:text-4xl text-gray-900 font-extrabold font-mono">
