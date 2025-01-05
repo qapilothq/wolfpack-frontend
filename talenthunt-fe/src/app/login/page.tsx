@@ -71,7 +71,7 @@ const Login: React.FC = () => {
           <div className="w-full max-w-md text-center lg:w-1/2 lg:pr-8">
             <div className=" mx-auto w-[200px] h-[200px] md:w-[250px] md:h-[250px] rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 flex items-center justify-center">
               <Image
-                src="/image.png"
+                src="/Image.png"
                 alt="Logo"
                 width={400}
                 height={400}

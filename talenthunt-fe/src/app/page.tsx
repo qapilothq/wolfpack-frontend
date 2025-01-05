@@ -122,7 +122,7 @@ const Home: React.FC = () => {
         <div className="flex lg:px-10 w-[100vw] flex-col lg:flex-row items-center lg:space-y-6 md:space-y-0 md:space-x-6">
           <div className="mb-3 flex flex-col items-center justify-center w-full max-w-[400px] h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 overflow-hidden">
             <Image
-              src="/image.png"
+              src="/Image.png"
               alt="Logo"
               width={400}
               height={400}
