@@ -97,17 +97,16 @@ const Home: React.FC = () => {
               Wolf-Pack: Trial Version
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm text-gray-700">
-              Welcome to Wolf-Pack! We&apos;re in active development, with
-              features still evolving. Your valuable feedback will help us
-              improve.
+              Welcome to Wolf-Pack! We&apos;re actively developing new features,
+              and your feedback is invaluable to us.
               <br />
               <br />
-              For login credentials or feedback, please contact:{" "}
+              To provide feedback, please contact us via:{" "}
               <a
-                href="mailto:aditya@qapilot.com"
+                href="https://forms.gle/jYtn78ucRtBnpUnP6"
                 className="font-bold text-black hover:underline"
               >
-                aditya@qapilot.com
+                Feedback Form
               </a>
             </AlertDialogDescription>
           </AlertDialogHeader>
