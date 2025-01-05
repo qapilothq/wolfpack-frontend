@@ -30,14 +30,9 @@ const Navbar: React.FC = () => {
       <div className="max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo Section */}
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center p-2">
             <Link href="/" className="flex items-center">
-              <Image
-                src="/wolf-pack-logo.png"
-                alt="Logo"
-                width={80}
-                height={50}
-              />
+              <Image src="/logo.png" alt="Logo" width={30} height={30} />
               <h2 className="text-xl text-gray-900 ml-2 font-mono">
                 Wolf-Pack
               </h2>

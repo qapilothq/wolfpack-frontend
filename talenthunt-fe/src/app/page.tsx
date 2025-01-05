@@ -120,12 +120,13 @@ const Home: React.FC = () => {
       </AlertDialog>
       <main className="flex-grow container  py-16 grid  gap-12 items-center">
         <div className="flex lg:px-10 w-[100vw] flex-col lg:flex-row items-center lg:space-y-6 md:space-y-0 md:space-x-6">
-          <div className=" md:mb-3 flex flex-col items-center justify-center w-[250px] h-[250px]  md:w-[400px] md:h-[400px] bg-gray-200 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
+          <div className="mb-3 flex flex-col items-center justify-center w-full max-w-[400px] h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 overflow-hidden">
             <Image
-              src="/wolf-pack-logo.png"
+              src="/finalhero.svg"
               alt="Logo"
               width={400}
               height={400}
+              className="w-full h-auto object-cover"
             />
           </div>
 
@@ -146,7 +147,7 @@ const Home: React.FC = () => {
             <div className="flex mt-10 justify-center md:justify-start space-x-4">
               <Button
                 size="lg"
-                className="bg-primary hover:bg-primary-dark transition-colors duration-300 shadow-md"
+                className="bg-[#003399] hover:bg-primary-dark transition-colors duration-300 shadow-md"
                 onClick={() => (window.location.href = "/login")}
               >
                 Get Started

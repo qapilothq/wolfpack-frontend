@@ -69,13 +69,13 @@ const Login: React.FC = () => {
         <div className="w-full max-w-5xl flex flex-col lg:flex-row gap-8 items-center justify-center">
           {/* Logo and Branding Section */}
           <div className="w-full max-w-md text-center lg:w-1/2 lg:pr-8">
-            <div className="mx-auto w-[200px] h-[200px] md:w-[250px] md:h-[250px] bg-gray-200 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 flex items-center justify-center">
+            <div className=" mx-auto w-[200px] h-[200px] md:w-[250px] md:h-[250px] rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 flex items-center justify-center">
               <Image
-                src="/wolf-pack-logo.png"
-                alt="Wolf-Pack Logo"
-                width={200}
-                height={200}
-                className="max-w-full max-h-full object-contain"
+                src="/finalhero.svg"
+                alt="Logo"
+                width={400}
+                height={400}
+                className="w-full h-auto object-cover rounded-xl"
               />
             </div>
             <h2 className="mt-6 text-3xl md:text-4xl text-gray-900 font-extrabold font-mono">
