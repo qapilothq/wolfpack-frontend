@@ -97,8 +97,9 @@ const Home: React.FC = () => {
               Wolf-Pack: Trial Version
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm text-gray-700">
-              Welcome to Wolf-Pack! We&apos;re actively developing new features,
-              and your feedback is invaluable to us.
+              Welcome to Wolf-Pack! We&apos;re in active development, with
+              features still evolving. Your valuable feedback will help us
+              improve.
               <br />
               <br />
               To provide feedback, please contact us via:{" "}
