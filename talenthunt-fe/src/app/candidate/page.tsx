@@ -21,6 +21,8 @@ import {
   RadialBarChart,
 } from "recharts";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
+import axios from "axios";
+import useStore from "../stores/store";
 
 interface UserData {
   pi?: {
@@ -82,10 +84,14 @@ const CandidateProfile: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [getProf, setgetProf] = useState<UserProfile>();
   const [roleName, setRoleName] = useState<string>();
+  const [isLoading, setIsLoading] = useState(false);
   const searchParams = useSearchParams();
   const profile_id = searchParams.get("profile_id");
   const role_id = searchParams.get("role_id");
 
+  const { authtoken, apiUrl } = useStore();
+
+  // Handle roles and user profile from session storage
   useEffect(() => {
     const rolejson: Role[] = JSON.parse(
       sessionStorage.getItem("ROLES") || "[]"
@@ -101,52 +107,89 @@ const CandidateProfile: React.FC = () => {
   }, [role_id]);
 
   useEffect(() => {
-    const getuserdata = async () => {
+    const getUserData = async () => {
+      if (!authtoken || !profile_id || !apiUrl) {
+        return;
+      }
+
+      setIsLoading(true);
       try {
-        const response = await fetch(
-          "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
+        console.log("Fetching data for profile:", profile_id);
+
+        const response = await axios.get(
+          `${apiUrl}/profiles/summary/${profile_id}`,
           {
-            method: "POST",
             headers: {
-              Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
+              Authorization: `Bearer ${authtoken}`,
             },
-            body: JSON.stringify({
-              requestType: "getProfileSummary",
-              profile_id: profile_id,
-            }),
           }
         );
 
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status} ${response.statusText}`);
-        }
-
-        const finaluserdata: UserData[] = await response.json();
-        setUserData(finaluserdata[0]);
+        console.log("API Response:", response.data);
+        const finalUserData: UserData = response.data;
+        setUserData(finalUserData);
       } catch (error) {
-        if (error instanceof Error) {
-          console.error("Error fetching data:", error.message);
-          setError(error.message);
+        if (axios.isAxiosError(error)) {
+          const message = error.response?.data?.error || error.message;
+          console.error("Error details:", {
+            status: error.response?.status,
+            data: error.response?.data,
+            message,
+          });
+          setError(message);
         } else {
           console.error("Unexpected error:", error);
+          setError("An unexpected error occurred");
         }
+      } finally {
+        setIsLoading(false);
       }
     };
-    getuserdata();
-  }, [profile_id]);
 
+    getUserData();
+  }, [authtoken, profile_id, apiUrl]);
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <div className="min-h-screen flex w-full items-center justify-center">
+        <Card className="w-full max-w-md p-6">
+          <CardHeader>
+            <CardTitle className="text-center text-red-500">Error</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-center">{error}</p>
+            <div className="mt-4 flex justify-center">
+              <Button onClick={() => window.history.back()} variant="outline">
+                Go Back
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex w-full items-center justify-center">
+        <Card className="w-full max-w-md p-6">
+          <CardContent className="flex flex-col items-center space-y-4">
+            <LoaderIcon className="animate-spin h-8 w-8 text-primary" />
+            <p>Loading profile data...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  // Modify the loading state to be consistent with the error display
   if (!userData) {
     return (
       <div className="min-h-screen flex w-full items-center justify-center">
-        <div className="flex items-center jusspace-x-2">
-          <LoaderIcon className="animate-spin" />
-          <span>Loading</span>
-        </div>
+        <Card className="w-full max-w-md p-6">
+          <CardContent className="flex flex-col items-center space-y-4">
+            <LoaderIcon className="animate-spin h-8 w-8 text-primary" />
+            <p>Loading profile data...</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }

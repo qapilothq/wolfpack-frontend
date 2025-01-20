@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import useStore from "../stores/store";
 import Link from "next/link";
+import axios from "axios";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -16,7 +17,9 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const { isLoggedIn, setIsLoggedIn } = useStore();
+  const { apiUrl } = useStore();
+
+  const { isLoggedIn, setIsLoggedIn, setAuthtoken } = useStore();
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -30,34 +33,27 @@ const Login: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch(
-        "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
-        {
-          method: "POST",
-          headers: {
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
-          },
-          body: JSON.stringify({
-            requestType: "login",
-            username: username,
-            password: password,
-          }),
-        }
-      );
+      const response = await axios.post(`${apiUrl}/auth/login`, {
+        username: username,
+        password: password,
+      });
 
-      if (!response.ok) {
-        throw new Error("Login failed. Please check your credentials.");
-      }
-
-      const data = await response.json();
+      const data = response.data;
       localStorage.setItem("authtoken", data.token);
+      setAuthtoken(data.token);
       setIsLoggedIn(true);
       console.log("Login successful:", data);
       router.push("/dashboard");
-      // Handle successful login (e.g., redirect, store token, etc.)
     } catch (error) {
-      setError((error as Error).message);
+      if (axios.isAxiosError(error) && error.response) {
+        setError(
+          error.response.data.error ||
+            "Login failed. Please check your credentials."
+        );
+      } else {
+        console.log(error);
+        setError("An unexpected error occurred.");
+      }
     } finally {
       setLoading(false);
     }

@@ -8,6 +8,8 @@ import { PlusIcon, Layers, Save, Edit2Icon } from "lucide-react";
 import { X } from "lucide-react";
 import { redirect } from "next/navigation";
 import AuthGuard from "../custom-components/Authguard";
+import axios from "axios";
+import useStore from "../stores/store";
 
 interface Role {
   name: string;
@@ -51,32 +53,30 @@ const CreateRoles: React.FC = () => {
     setEditingIndex(index);
   };
 
+  const { authtoken, apiUrl } = useStore();
+
   const submitHandler = async (): Promise<void> => {
     setIsLoading(true);
     console.log("Roles submitted:", roles);
     for (const value of roles) {
       try {
-        const response = await fetch(
-          "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
+        const response = await axios.post(
+          `${apiUrl}/api/roles`,
           {
-            method: "POST",
-            headers: {
-              Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
+            role: {
+              name: value.name,
+              job_description: value.desc,
             },
-            body: JSON.stringify({
-              requestType: "createRole",
-              role: {
-                name: value.name,
-                job_description: value.desc,
-              },
-            }),
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${authtoken}`,
+            },
           }
         );
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log(data);
+        if (response.status === 200) {
+          console.log(response.data);
         } else {
           console.log("Error");
         }

@@ -18,7 +18,7 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Wolf-Pack",
   icons: {
-    icon: "/logo.png",
+    icon: "/favicon-wolfpack.png",
   },
 };
 

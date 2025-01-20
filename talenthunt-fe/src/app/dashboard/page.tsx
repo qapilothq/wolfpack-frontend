@@ -7,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import AuthGuard from "../custom-components/Authguard";
 import { useRouter } from "next/navigation";
+import useStore from "../stores/store";
+import axios from "axios";
 
 const Index = () => {
   const { toast } = useToast();
@@ -15,6 +17,8 @@ const Index = () => {
   const [refreshTable, setRefreshTable] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  const { authtoken, apiUrl } = useStore();
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -30,86 +34,220 @@ const Index = () => {
     }
   };
 
+  // const uploadFile = async (file: File) => {
+  //   setIsUploading(true);
+  //   setIsLoading(true);
+  //   try {
+  //     const response = await axios.post(
+  //       `${apiUrl}/profiles/getSignedUrl`,
+  //       {
+  //         role_id: dropdownValue,
+  //         fileType: file.type,
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${authtoken}`,
+  //         },
+  //       }
+  //     );
+
+  //     if (response.status === 200) {
+  //       const { signedUrl, path, token } = response.data;
+  //       console.log("Response:", response.data);
+  //       console.log("URL:", signedUrl);
+
+  //       if (signedUrl) {
+  //         const fileuploadAPI = await fetch(signedUrl, {
+  //           method: "PUT",
+  //           headers: { "Content-Type": "application/octet-stream" },
+  //           body: file,
+  //         });
+
+  //         if (fileuploadAPI.ok) {
+  //           const resumematch = await axios.post(
+  //             `${apiUrl}/profiles/createProfile`,
+  //             {
+  //               profile: {
+  //                 role_id: dropdownValue,
+  //                 profile_url: path,
+  //               },
+  //             },
+  //             {
+  //               headers: {
+  //                 Authorization: `Bearer ${authtoken}`,
+  //               },
+  //             }
+  //           );
+
+  //           if (resumematch.status === 200) {
+  //             console.log("Profile created successfully");
+
+  //             setRefreshTable((prev) => prev + 1);
+  //             setIsLoading(false);
+  //           }
+  //           setIsUploading(false);
+
+  //           setDropdownValue(dropdownValue);
+
+  //           toast({
+  //             title: "File uploaded successfully!",
+  //           });
+  //         } else {
+  //           toast({
+  //             variant: "destructive",
+  //             title: "Failed to upload the file.",
+  //           });
+  //         }
+  //       }
+  //     } else {
+  //       toast({
+  //         variant: "destructive",
+  //         title: "Failed to upload the file.",
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Error uploading file:", error);
+  //     toast({
+  //       variant: "destructive",
+  //       title: "An error occurred while uploading the file.",
+  //     });
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const uploadFile = async (file: File) => {
     setIsUploading(true);
     setIsLoading(true);
     try {
-      const response = await fetch(
-        "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
-        {
-          method: "POST",
-          headers: {
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
-          },
-          body: JSON.stringify({
-            requestType: "getSignedUrl",
+      if (file.type === "application/pdf") {
+        // Existing PDF upload logic
+        const response = await axios.post(
+          `${apiUrl}/profiles/getSignedUrl`,
+          {
             role_id: dropdownValue,
-          }),
+            fileType: file.type,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${authtoken}`,
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          const { signedUrl, path } = response.data;
+          console.log("Response:", response.data);
+          console.log("URL:", signedUrl);
+
+          if (signedUrl) {
+            const fileuploadAPI = await fetch(signedUrl, {
+              method: "PUT",
+              headers: { "Content-Type": "application/octet-stream" },
+              body: file,
+            });
+
+            if (fileuploadAPI.ok) {
+              const resumematch = await axios.post(
+                `${apiUrl}/profiles/createProfile`,
+                {
+                  profile: {
+                    role_id: dropdownValue,
+                    profile_url: path,
+                  },
+                },
+                {
+                  headers: {
+                    Authorization: `Bearer ${authtoken}`,
+                  },
+                }
+              );
+
+              if (resumematch.status === 200) {
+                console.log("Profile created successfully");
+
+                setRefreshTable((prev) => prev + 1);
+                setIsLoading(false);
+              }
+              setIsUploading(false);
+
+              setDropdownValue(dropdownValue);
+
+              toast({
+                title: "File uploaded successfully!",
+              });
+            } else {
+              toast({
+                variant: "destructive",
+                title: "Failed to upload the file.",
+              });
+            }
+          }
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Failed to upload the file.",
+          });
         }
-      );
+      } else if (file.type === "application/zip") {
+        // New ZIP upload logic
+        const bulkResponse = await axios.post(
+          `${apiUrl}/profiles/createBulkProfiles`,
+          {
+            role_id: dropdownValue,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${authtoken}`,
+            },
+          }
+        );
 
-      if (response.ok) {
-        const resp: { signedUrl: string; path: string; token: string } =
-          await response.json();
-        console.log("Response:", resp);
-        const { signedUrl, path, token } = resp;
-        console.log("URL:", signedUrl);
+        if (bulkResponse.status === 200) {
+          const { signedUrl, process_id } = bulkResponse.data;
+          console.log("Bulk Response:", bulkResponse.data);
 
-        if (signedUrl) {
           const fileuploadAPI = await fetch(signedUrl, {
             method: "PUT",
-            headers: {
-              Authorization: token,
-              "Content-Type": "application/octet-stream",
-            },
+            headers: { "Content-Type": "application/octet-stream" },
             body: file,
           });
 
           if (fileuploadAPI.ok) {
-            const resumematch = await fetch(
-              "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
-              {
-                method: "POST",
-                headers: {
-                  Authorization:
-                    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
-                },
-                body: JSON.stringify({
-                  requestType: "createProfile",
-                  profile: {
-                    role_id: dropdownValue,
-                    profile_url: `https://tbtataojvhqyvlnzckwe.supabase.co/storage/v1/object/hackathon/${path}`,
+            // Polling for bulk process completion
+            let status = "";
+            do {
+              const statusResponse = await axios.get(
+                `${apiUrl}/bulk-status/${process_id}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${authtoken}`,
                   },
-                }),
+                }
+              );
+
+              status = statusResponse.data.status;
+              if (status !== "completed") {
+                await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait for 2 seconds before retrying
               }
-            );
+            } while (status !== "completed");
 
-            if (resumematch.ok) {
-              console.log("Profile created successfully");
-
-              setRefreshTable((prev) => prev + 1);
-              setIsLoading(false);
-            }
-            setIsUploading(false);
-
-            setDropdownValue(dropdownValue);
-
+            console.log("Bulk profile creation completed");
+            setRefreshTable((prev) => prev + 1);
             toast({
-              title: "File uploaded successfully!",
+              title: "Bulk file uploaded successfully!",
             });
           } else {
             toast({
               variant: "destructive",
-              title: "Failed to upload the file.",
+              title: "Failed to upload the ZIP file.",
             });
           }
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Failed to initiate bulk profile creation.",
+          });
         }
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Failed to upload the file.",
-        });
       }
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -119,8 +257,8 @@ const Index = () => {
       });
       setIsLoading(false);
     }
+    setIsUploading(false);
   };
-
   const handleDropdownSelect = (value: string) => {
     setDropdownValue(value);
     setIsLoading(true);

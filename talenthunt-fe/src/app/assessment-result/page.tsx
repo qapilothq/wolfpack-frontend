@@ -12,7 +12,8 @@ import {
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { useSearchParams } from "next/navigation";
 import { LoaderIcon } from "lucide-react";
-
+import axios from "axios";
+import useStore from "../stores/store";
 // interface Question {
 //   question: string;
 //   answer: string;
@@ -33,38 +34,78 @@ interface Candidate {
     answer: string;
   }>;
 }
-// interface CanidateCardProps  {
-//   candidate: Candidate;
-// }
-
-// const CandidateCard: React.FC<CanidateCardProps> = ({ candidate }) => (
-//   <Card className="hover:shadow-lg transition-shadow duration-300">
-//     <CardHeader>
-//       <div className="flex items-center">
-//         <TargetIcon className="mr-2 text-blue-500" />
-//         <CardTitle>Personal Information</CardTitle>
-//       </div>
-//     </CardHeader>
-//     <CardContent>
-//       <div className="space-y-2">
-//         <p><strong>Name:</strong> {candidate.name}</p>
-//         <p><strong>Email:</strong> {candidate.email}</p>
-//       </div>
-//     </CardContent>
-//   </Card>
-// );
 
 const AssessmentResults: React.FC = () => {
   const [candidate, setCandidate] = useState<Candidate | null>(null);
   const [evaluations, setEvaluations] = useState<CandidateEvaluation>({});
   const [assessmentScore, setAssessmentScore] = useState<number | null>(null);
-  const searchParams = useSearchParams();
-  const [loading, setLoading] = useState<boolean>(true); // Add loading state
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isInitializing, setIsInitializing] = useState<boolean>(true);
 
+  const searchParams = useSearchParams();
   const role_id = searchParams.get("role_id");
   const profile_id = searchParams.get("profile_id");
-  console.log("role_id", role_id);
-  console.log("profile_id", profile_id);
+  const { authtoken, apiUrl } = useStore();
+
+  // First useEffect to check if we have the required data
+  useEffect(() => {
+    if (authtoken && apiUrl && role_id && profile_id) {
+      setIsInitializing(false);
+    }
+  }, [authtoken, apiUrl, role_id, profile_id]);
+
+  // Main data fetching useEffect
+  useEffect(() => {
+    const fetchData = async () => {
+      if (isInitializing) return;
+
+      try {
+        const response = await fetch(
+          `${apiUrl}/profiles/summary/${profile_id}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${authtoken}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const profileData = await response.json();
+
+        const assessmentResponse = await axios.get(
+          `${apiUrl}/assessments/${profile_id}/${role_id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${authtoken}`,
+            },
+          }
+        );
+
+        const data = assessmentResponse.data;
+
+        // Accessing the properties directly from the object
+        const candidateName = profileData.pi?.Name ?? "Unknown";
+        const candidateEmail = profileData.pi?.Email ?? "N/A";
+        const candidateResponses = data?.assessment ?? [];
+
+        setCandidate({
+          name: candidateName,
+          email: candidateEmail,
+          responses: candidateResponses,
+        });
+      } catch (error) {
+        console.log("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [isInitializing, authtoken, apiUrl, profile_id, role_id]);
 
   const handleEvaluation = (questionId: number, isCorrect: boolean) => {
     const newEvaluations = {
@@ -78,7 +119,6 @@ const AssessmentResults: React.FC = () => {
     };
     setEvaluations(newEvaluations);
 
-    // Calculate score
     const totalQuestions = candidate?.responses.length || 0;
     const correctAnswers = Object.values(newEvaluations).filter(
       (evaluation) => evaluation.correct
@@ -90,108 +130,34 @@ const AssessmentResults: React.FC = () => {
     setAssessmentScore(score);
   };
 
-  useEffect(() => {
-    const user = sessionStorage.getItem("USER_PROF");
-    console.log(user);
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        console.log("Role ID:", role_id);
-        console.log("Profile ID:", profile_id);
-
-        const assessmentResponse = await fetch(
-          "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              requestType: "getAssessment",
-              role_id: role_id,
-              profile_id: profile_id,
-            }),
-          }
-        );
-
-        const data = await assessmentResponse.json();
-        console.log("Raw Assessment Data:", data);
-        console.log("Assessment Data Type:", typeof data);
-        console.log("Assessment Data Length:", data.length);
-        console.log("First Assessment Item:", data[0]);
-
-        const profileResponse = await fetch(
-          "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              requestType: "getProfileSummary",
-              profile_id: profile_id,
-            }),
-          }
-        );
-
-        const profileData = await profileResponse.json();
-        console.log("Raw Profile Data:", profileData);
-        console.log("Profile Data Type:", typeof profileData);
-        console.log("Profile Data Length:", profileData.length);
-        console.log("First Profile Item:", profileData[0]);
-
-        // Safe data extraction with optional chaining and nullish coalescing
-        const candidateName = profileData[0]?.pi?.Name ?? "Unknown";
-        const candidateEmail = profileData[0]?.pi?.Email ?? "N/A";
-        const candidateResponses = data.data[0]?.assessment ?? [];
-
-        setCandidate({
-          name: candidateName,
-          email: candidateEmail,
-          responses: candidateResponses,
-        });
-
-        setLoading(false);
-      } catch (error) {
-        console.error("Detailed Error:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [role_id, profile_id]);
-
-  useEffect(() => {
-    console.log("candidate from useffect", candidate);
-  }, [candidate]);
-
   const handleSaveEvaluation = async () => {
-    console.log(evaluations);
-    const response = await fetch(
-      "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
-      {
-        method: "POST",
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          requestType: "updateScore",
+    if (!authtoken) {
+      alert("Authentication token not available. Please try again.");
+      return;
+    }
+    try {
+      const response = await axios.post(
+        `${apiUrl}/profiles/score`,
+        {
           profile_id: profile_id,
           assessment_score: assessmentScore,
-        }),
-      }
-    );
-    const data = await response.json();
-    console.log(data);
-    alert("Evaluation saved succussfully");
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authtoken}`,
+          },
+        }
+      );
+
+      console.log(response.data);
+      alert("Evaluation saved successfully");
+    } catch (error) {
+      console.error("Error saving evaluation:", error);
+      alert("Failed to save evaluation");
+    }
   };
-  if (loading) {
+
+  if (isInitializing || loading) {
     return (
       <div className="flex w-full items-center justify-center">
         <div className="flex items-center space-x-2">
@@ -202,7 +168,7 @@ const AssessmentResults: React.FC = () => {
     );
   }
 
-  if (candidate?.responses.length === 0) {
+  if (!candidate || candidate.responses.length === 0) {
     return (
       <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center">
         <Card className="w-full max-w-2xl shadow-lg">
@@ -214,13 +180,14 @@ const AssessmentResults: React.FC = () => {
           </CardHeader>
           <CardContent>
             <p className="text-gray-700">
-              Asessment is not completed by the candidate.
+              Assessment is not completed by the candidate.
             </p>
           </CardContent>
         </Card>
       </div>
     );
   }
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-gray-100 pt-12">
       <div className="flex flex-col gap-4 mx-4 sm:mx-10">

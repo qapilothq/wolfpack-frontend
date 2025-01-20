@@ -17,6 +17,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import useStore from "../stores/store";
+import axios from "axios";
 
 // const jobtitle = [
 //     {
@@ -50,33 +52,31 @@ const Combobox: React.FC<props> = ({ selectedValue, onSelect }) => {
   const [open, setOpen] = React.useState(false);
   const [data, setData] = React.useState<JobData[]>([]);
 
+  const { authtoken, apiUrl } = useStore();
+
   useEffect(() => {
     const fetchJD = async () => {
-      const resumematch = await fetch(
-        "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
-        {
-          method: "POST",
+      try {
+        const response = await axios.get(`${apiUrl}/roles`, {
           headers: {
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
+            Authorization: `Bearer ${authtoken}`,
           },
-          body: JSON.stringify({
-            requestType: "getRoles",
-          }),
+        });
+        if (response.status === 200) {
+          const data = response.data;
+          setData(data);
+          sessionStorage.setItem("ROLES", JSON.stringify(data));
+          console.log(data);
+        } else {
+          console.log("Error");
         }
-      );
-      if (resumematch.ok) {
-        const data = await resumematch.json();
-        setData(data);
-        sessionStorage.setItem("ROLES", JSON.stringify(data));
-        console.log(data);
-      } else {
-        console.log("Error");
+      } catch (error) {
+        console.error("Fetch error:", error);
       }
     };
 
     fetchJD();
-  }, []);
+  }, [authtoken, apiUrl]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileUp, Search, ShieldCheck, RotateCcw, Loader2 } from "lucide-react";
+import axios from "axios";
+import useStore from "../stores/store";
 
 // Types and Interfaces
 type Step = 1 | 2 | 3;
@@ -26,10 +28,6 @@ interface StepProps {
   totalSteps: number;
 }
 
-const API_URL =
-  "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis";
-const AUTH_TOKEN =
-  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I";
 const MIN_JD_LENGTH = 100;
 
 const LoadingSpinner: React.FC<{ size?: number }> = ({ size = 24 }) => (
@@ -92,33 +90,34 @@ const ResumeMatchDemo: React.FC = () => {
     fetchProfile: false,
   });
 
+  const { authtoken, apiUrl } = useStore();
   const setLoading = (key: keyof LoadingState, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
 
   const isAnyLoading = Object.values(loadingStates).some((state) => state);
 
-  // API Handlers
   const createRole = async () => {
     setLoading("createRole", true);
     try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { Authorization: AUTH_TOKEN },
-        body: JSON.stringify({
-          requestType: "createRole",
+      const response = await axios.post(
+        `${apiUrl}/roles`,
+        {
           role: {
             name: `demo_${formData.roleName}`,
             job_description: formData.jobDescription,
           },
-        }),
-      });
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authtoken}`,
+          },
+        }
+      );
 
-      if (!response.ok) throw new Error("Failed to create role");
-
-      const data = await response.json();
-      setFormData((prev) => ({ ...prev, roleId: data.id }));
-      return data;
+      if (!response.data) throw new Error("Failed to create role");
+      setFormData((prev) => ({ ...prev, roleId: response.data.id }));
+      return response.data;
     } catch (error) {
       console.error("Error creating role:", error);
       throw error;
@@ -129,50 +128,53 @@ const ResumeMatchDemo: React.FC = () => {
 
   const uploadResume = async (file: File) => {
     setLoading("uploadResume", true);
+    console.log("getting signed url");
     try {
-      // Get signed URL
-      const urlResponse = await fetch(API_URL, {
-        method: "POST",
-        headers: { Authorization: AUTH_TOKEN },
-        body: JSON.stringify({
-          requestType: "getSignedUrl",
+      // const urlResponse = await axios.post(`${apiUrl}/profiles/getSignedUrl`, {
+      //   role_id: formData.roleId,
+      //   fileType: file.type,
+      // });
+
+      const urlResponse = await axios.post(
+        `${apiUrl}/profiles/getSignedUrl`,
+        {
           role_id: formData.roleId,
-        }),
-      });
-
-      if (!urlResponse.ok) throw new Error("Failed to get signed URL");
-
-      const { signedUrl, path, token } = await urlResponse.json();
-
-      // Upload file
-      const uploadResponse = await fetch(signedUrl, {
-        method: "PUT",
-        headers: {
-          Authorization: token,
-          "Content-Type": "application/octet-stream",
+          fileType: file.type,
         },
+        {
+          headers: {
+            Authorization: `Bearer ${authtoken}`,
+          },
+        }
+      );
+
+      if (!urlResponse.data.signedUrl)
+        throw new Error("Failed to get signed URL");
+      const { signedUrl, path } = urlResponse.data;
+
+      await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": "application/octet-stream" },
         body: file,
       });
 
-      if (!uploadResponse.ok) throw new Error("Failed to upload file");
-
-      // Create profile
-      const profileResponse = await fetch(API_URL, {
-        method: "POST",
-        headers: { Authorization: AUTH_TOKEN },
-        body: JSON.stringify({
-          requestType: "createProfile",
-          profile: {
-            role_id: formData.roleId,
-            profile_url: `https://tbtataojvhqyvlnzckwe.supabase.co/storage/v1/object/hackathon/${path}`,
-          },
-        }),
-      });
-
-      if (!profileResponse.ok) throw new Error("Failed to create profile");
-
-      const profileData = await profileResponse.json();
-      return profileData;
+      // const profileResponse = await axios.post(
+      //   `${apiUrl}/profiles/createProfile`,
+      //   {
+      //     profile: {
+      //       role_id: formData.roleId,
+      //       profile_url: path,
+      //     },
+      //   },
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${authtoken}`,
+      //     },
+      //   }
+      // );
+      // console.log("profileResponse", profileResponse.data);
+      return path;
+      // return profileResponse.data;
     } catch (error) {
       console.error("Error in upload process:", error);
       throw error;
@@ -181,25 +183,29 @@ const ResumeMatchDemo: React.FC = () => {
     }
   };
 
-  const fetchProfileData = async (profileId: number) => {
+  const fetchProfileData = async (
+    profileUrl: string,
+    jobDescription: string
+  ) => {
     try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { Authorization: AUTH_TOKEN },
-        body: JSON.stringify({
-          requestType: "getProfile",
-          profile_id: profileId,
-        }),
-      });
+      const response = await axios.post(
+        `${apiUrl}/profiles/summary`,
+        {
+          profile_url: profileUrl,
+          job_description: jobDescription,
+        },
+        {
+          headers: { Authorization: `Bearer ${authtoken}` },
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      if (!response.data) {
+        throw new Error("Failed to fetch profile data");
       }
-      return await response.json();
+      return response.data;
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("Error fetching profile summary:", error);
       throw error;
-    } finally {
     }
   };
 
@@ -241,8 +247,7 @@ const ResumeMatchDemo: React.FC = () => {
     if (!resumeFile) return;
 
     try {
-      const profileData = await uploadResume(resumeFile);
-
+      const profileUrl = await uploadResume(resumeFile);
       let fetchedProfileData;
       let attempts = 0;
       const maxAttempts = 10;
@@ -250,7 +255,10 @@ const ResumeMatchDemo: React.FC = () => {
       setLoading("fetchProfile", true);
 
       do {
-        fetchedProfileData = await fetchProfileData(profileData.newProfile.id);
+        fetchedProfileData = await fetchProfileData(
+          profileUrl,
+          formData.jobDescription
+        );
         if (fetchedProfileData.score === null && attempts < maxAttempts - 1) {
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
@@ -259,16 +267,35 @@ const ResumeMatchDemo: React.FC = () => {
 
       if (fetchedProfileData.score !== null) {
         setLoading("fetchProfile", false);
+
+        // Ensure matchReasons is an array
+        const matchReasons = Array.isArray(fetchedProfileData.match_reasons)
+          ? fetchedProfileData.match_reasons.join(", ")
+          : "No match reasons available";
+
+        // Ensure redFlags properties are arrays
+        const redFlags = {
+          low: Array.isArray(fetchedProfileData.red_flags?.low)
+            ? fetchedProfileData.red_flags.low
+            : [],
+          medium: Array.isArray(fetchedProfileData.red_flags?.medium)
+            ? fetchedProfileData.red_flags.medium
+            : [],
+          high: Array.isArray(fetchedProfileData.red_flags?.high)
+            ? fetchedProfileData.red_flags.high
+            : [],
+        };
+
         setMatchResults({
           profileScore: fetchedProfileData.score,
-          name: fetchedProfileData.name,
-          matchReasons: fetchedProfileData.match_reasons.join(", "),
-          flagReasons: [
-            ...fetchedProfileData.red_flags.low,
-            ...fetchedProfileData.red_flags.medium,
-            ...fetchedProfileData.red_flags.high,
-          ].join(", "),
+          name: fetchedProfileData.name || "N/A",
+          matchReasons: matchReasons,
+          flagReasons:
+            [...redFlags.low, ...redFlags.medium, ...redFlags.high].join(
+              ", "
+            ) || "No flags found",
         });
+
         setCurrentStep(3);
       } else {
         throw new Error(

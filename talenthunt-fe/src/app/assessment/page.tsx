@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { CheckCircle2Icon, AlertCircleIcon } from "lucide-react";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
+import axios from "axios";
+import useStore from "../stores/store";
 
 interface AssessmentQuestion {
   question: string;
@@ -16,11 +18,15 @@ interface AssessmentResponse {
   answer: string;
 }
 
+interface AssessmentQuestion {
+  question: string;
+}
+
 const CandidateAssessment: React.FC = () => {
   const searchParams = useSearchParams();
   const role_id = searchParams?.get("role_id") || "";
   const profile_id = searchParams?.get("profile_id") || "";
-
+  const { apiUrl } = useStore();
   console.log("roleid", role_id);
 
   const [assessmentQuestions, setAssessmentQuestions] = useState<
@@ -32,8 +38,8 @@ const CandidateAssessment: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [taken, setTaken] = useState<boolean>(false);
-
   const maxWords = 250;
+
   useEffect(() => {
     const fetchQuestions = async () => {
       if (!role_id || !profile_id) {
@@ -45,74 +51,17 @@ const CandidateAssessment: React.FC = () => {
       try {
         setIsLoading(true);
 
-        // Call createProfileQuestions first
-        const createProfileQuestions = await fetch(
-          "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              requestType: "createProfileQuestions",
-              role_id: role_id,
-              profile_id: profile_id,
-            }),
-          }
+        const getAllQuestionsResponse = await axios.get(
+          `${apiUrl}/profiles/questions/${profile_id}/${role_id}`
         );
 
-        const profileQuestions = await createProfileQuestions.json();
-        console.log("profilequestions", profileQuestions);
-
-        // Then call getAllQuestions
-        const getAllQuestions = await fetch(
-          "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              requestType: "getAllQuestions",
-              role_id: role_id,
-              profile_id: profile_id,
-            }),
-          }
-        );
-
-        if (!getAllQuestions.ok) {
-          throw new Error("Failed to fetch questions");
-        }
-
-        const data = await getAllQuestions.json();
+        const data = getAllQuestionsResponse.data;
         console.log(data);
-        // const combinedQuestions = [
-        //   ...(data.profileQuestions && data.profileQuestions.length > 0
-        //     ? data.profileQuestions.map((question: string) => ({ question }))
-        //     : []),
-
-        //   ...(data.customQuestions && data.customQuestions.length > 0
-        //     ? data.customQuestions.map((question: string) => ({ question }))
-        //     : data.roleQuestions && data.roleQuestions.length > 0
-        //     ? data.roleQuestions.map((question: string) => ({ question }))
-        //     : []),
-        // ];
         const combinedQuestions = [];
 
         if (data.profileQuestions && data.profileQuestions.length > 0) {
           combinedQuestions.push(
             ...data.profileQuestions.map((question: string) => ({
-              question,
-            }))
-          );
-        } else if (
-          profileQuestions.questions &&
-          profileQuestions.questions.length > 0
-        ) {
-          combinedQuestions.push(
-            ...profileQuestions.questions.map((question: string) => ({
               question,
             }))
           );
@@ -152,22 +101,10 @@ const CandidateAssessment: React.FC = () => {
     };
 
     const checkAssessmentTaken = async () => {
-      const assessmentResponse = await fetch(
-        "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            requestType: "getAssessment",
-            role_id: role_id,
-            profile_id: profile_id,
-          }),
-        }
+      const assessmentResponse = await axios.get(
+        `${apiUrl}/assessments/${profile_id}/${role_id}`
       );
-      const data = await assessmentResponse.json();
+      const data = await assessmentResponse.data;
       const candidateResponses = data.data[0]?.assessment ?? [];
 
       if (candidateResponses.length > 0) {
@@ -178,11 +115,11 @@ const CandidateAssessment: React.FC = () => {
     };
 
     checkAssessmentTaken();
-  }, [role_id, profile_id]);
+  }, [role_id, profile_id, apiUrl]);
 
   useEffect(() => {
     console.log("assessmentQuestions", assessmentQuestions);
-  }, [assessmentQuestions]);
+  }, [assessmentQuestions, apiUrl]);
 
   const handleResponseChange = (index: number, response: string) => {
     const wordCount = response
@@ -227,24 +164,13 @@ const CandidateAssessment: React.FC = () => {
 
     if (allQuestionsAnswered) {
       try {
-        const submitResponse = await fetch(
-          "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              requestType: "saveAssessment",
-              assessment: responses,
-              role_id: role_id,
-              profile_id: profile_id,
-            }),
-          }
-        );
+        const submitResponse = await axios.post(`${apiUrl}/assessments/save`, {
+          assessment: responses,
+          role_id: role_id,
+          profile_id: profile_id,
+        });
 
-        if (submitResponse.ok) {
+        if (submitResponse.status === 200) {
           setSubmitted(true);
         } else {
           throw new Error("Failed to submit assessment");

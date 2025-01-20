@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { PlusIcon, TrashIcon, LoaderIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "next/navigation";
+import useStore from "../stores/store";
+import axios from "axios";
 
 interface Role {
   name: string;
@@ -17,7 +19,6 @@ const Assessment: React.FC = () => {
   const { toast } = useToast();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [questionsAdded, setQuestionsAdded] = useState<string[]>([]);
-  // const [roles, setRoles] = useState<Role[]>([]);
   const [currentRoleDescription, setCurrentRoleDescription] =
     useState<string>("");
   const [currentAISuggestions, setCurrentAISuggestions] = useState<string[]>(
@@ -27,15 +28,27 @@ const Assessment: React.FC = () => {
   const role_id = searchParams?.get("role_id") || "";
 
   // New state for loading and error handling
-  const [isLoadingRoles, setIsLoadingRoles] = useState(true);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(false); // Changed to false initially
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [rolesError, setRolesError] = useState<string | null>(null);
   const [questionsError, setQuestionsError] = useState<string | null>(null);
   const [role, setRole] = useState<Role>();
 
+  const { authtoken, apiUrl } = useStore();
+
+  // Add new state to track if auth is ready
+  const [isAuthReady, setIsAuthReady] = useState(false);
+
+  // Check if auth is ready
+  useEffect(() => {
+    if (authtoken && apiUrl) {
+      setIsAuthReady(true);
+    }
+  }, [authtoken, apiUrl]);
+
   const handleConfigureAssessment = async () => {
-    if (!selectedRole) {
+    if (!selectedRole || !authtoken) {
       toast({
         title: "Error",
         description: "Please select a role before configuring the assessment",
@@ -46,35 +59,32 @@ const Assessment: React.FC = () => {
 
     setIsConfiguring(true);
     try {
-      const response = await fetch(
-        "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
+      const response = await axios.post(
+        `${apiUrl}/roles/${role_id}/custom-questions`,
         {
-          method: "POST",
+          questions: questionsAdded,
+        },
+        {
           headers: {
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authtoken}`,
           },
-          body: JSON.stringify({
-            requestType: "createCustomQuestions",
-            role_id: selectedRole,
-            questions: questionsAdded,
-          }),
         }
       );
-      console.log(response);
 
-      alert("Assessment configured successfully");
-      setQuestionsAdded([]);
-      // const data = await response.json();
-      // console.log('Response:', data);
-      // if (!response.ok) {
-      //   throw new Error('Failed to configure assessment');
-      // }
+      // Check if the response status is not in the 2xx range
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error("Network response was not ok");
+      }
+
+      const responseData = response.data;
+      console.log(responseData);
 
       toast({
         title: "Success",
         description: "Assessment configured successfully",
       });
+      setQuestionsAdded([]);
     } catch (error) {
       console.error("Error configuring assessment:", error);
       toast({
@@ -95,50 +105,47 @@ const Assessment: React.FC = () => {
     console.log("selectedRole", selectedRole);
   }, [selectedRole]);
 
+  // Modified useEffect to wait for auth
   useEffect(() => {
     const getRoles = async () => {
+      if (!authtoken || !apiUrl) return; // Don't proceed if auth is not ready
+
       setIsLoadingRoles(true);
       setRolesError(null);
       try {
-        const response = await fetch(
-          "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
-          {
-            method: "POST",
-            headers: {
-              Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
-            },
-            body: JSON.stringify({
-              requestType: "getRoles",
-            }),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch roles");
+        if (!role_id) {
+          throw new Error("Role ID is required");
         }
 
-        const data = await response.json();
-        const formattedRoles = data.map((role: Role) => ({
+        const response = await axios.get(`${apiUrl}/roles`, {
+          headers: {
+            Authorization: `Bearer ${authtoken}`,
+          },
+        });
+
+        const rolesData = response.data;
+        if (!Array.isArray(rolesData)) {
+          throw new Error("Unexpected response format");
+        }
+
+        const formattedRoles = rolesData.map((role) => ({
           name: role.name,
           id: role.id,
           job_description: role.job_description,
           suggested_questions: role.suggested_questions || [],
         }));
 
-        // If there's a role_id from URL, try to set its description
-        console.log("formattedRole", formattedRoles);
-        if (role_id) {
-          const selectedRoleObj = formattedRoles.find((role: Role) => {
-            console.log(role.id, role_id);
-            return role.id === Number(role_id.trim());
-          });
+        console.log("formattedRoles", formattedRoles);
 
-          console.log("selectedRoleObj", selectedRoleObj);
-          if (selectedRoleObj) {
-            setRole(selectedRoleObj);
-            setCurrentRoleDescription(selectedRoleObj.job_description);
-          }
+        const selectedRoleObj = formattedRoles.find(
+          (role) => role.id === parseInt(role_id)
+        );
+
+        if (selectedRoleObj) {
+          setRole(selectedRoleObj);
+          setCurrentRoleDescription(selectedRoleObj.job_description);
+        } else {
+          setRolesError("Role not found");
         }
       } catch (error) {
         console.error("Error fetching roles:", error);
@@ -147,50 +154,54 @@ const Assessment: React.FC = () => {
         setIsLoadingRoles(false);
       }
     };
+    if (isAuthReady) {
+      getRoles();
+    }
+  }, [role_id, isAuthReady]);
 
-    getRoles();
-  }, [role_id]);
-
+  // Modified useEffect to wait for auth
   useEffect(() => {
     const getAIQuestions = async () => {
-      if (selectedRole) {
-        setIsLoadingQuestions(true);
-        setQuestionsError(null);
-        try {
-          const response = await fetch(
-            "https://tbtataojvhqyvlnzckwe.supabase.co/functions/v1/talenthunt-apis",
-            {
-              method: "POST",
-              headers: {
-                Authorization:
-                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRidGF0YW9qdmhxeXZsbnpja3dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4NjEwMjIsImV4cCI6MjA0ODQzNzAyMn0.WpMB4UUuGiyT2COwoHdfNNS9AB3ad-rkctxJSVgDp7I",
-              },
-              body: JSON.stringify({
-                requestType: "getRoleQuestions",
-                role_id: selectedRole,
-              }),
-            }
-          );
-          const data = await response.json();
-          console.log(data);
+      if (!authtoken || !apiUrl) return;
 
-          setCurrentAISuggestions(data.questions);
-        } catch (error) {
-          console.error("Error fetching AI questions:", error);
-        } finally {
-          setIsLoadingQuestions(false);
+      setIsLoadingQuestions(true);
+      setQuestionsError(null);
+      try {
+        const response = await axios.get(
+          `${apiUrl}/roles/${role_id}/questions`,
+          {
+            headers: {
+              Authorization: `Bearer ${authtoken}`,
+            },
+          }
+        );
+
+        console.log("AI Questions Response:", response.data);
+
+        // Access the nested questions array
+        if (
+          response.data?.data?.questions &&
+          Array.isArray(response.data.data.questions)
+        ) {
+          setCurrentAISuggestions(response.data.data.questions);
+        } else {
+          throw new Error("Unexpected response format for AI questions");
         }
+      } catch (error) {
+        console.error("Error fetching AI questions:", error);
+        setQuestionsError(
+          "Failed to load AI suggestions. Please try again later."
+        );
+        setCurrentAISuggestions([]);
+      } finally {
+        setIsLoadingQuestions(false);
       }
     };
-
-    if (selectedRole) {
-      // Fetch AI suggested questions
+    if (selectedRole && isAuthReady) {
       getAIQuestions();
-
-      // Clear previously added questions
       setQuestionsAdded([]);
     }
-  }, [selectedRole, role_id]);
+  }, [selectedRole, isAuthReady, apiUrl, authtoken]);
 
   const addOrRemoveQuestion = (question: string) => {
     setQuestionsAdded((prev) =>
@@ -200,10 +211,22 @@ const Assessment: React.FC = () => {
     );
   };
 
+  // Show loading state while waiting for auth
+  if (!isAuthReady) {
+    return (
+      <div className="min-h-screen flex w-full items-center justify-center">
+        <div className="flex items-center space-x-2">
+          <LoaderIcon className="animate-spin" />
+          <span>Initializing...</span>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoadingRoles) {
     return (
       <div className="min-h-screen flex w-full items-center justify-center">
-        <div className="flex items-center jusspace-x-2">
+        <div className="flex items-center space-x-2">
           <LoaderIcon className="animate-spin" />
           <span>Loading roles...</span>
         </div>
@@ -325,7 +348,7 @@ const RightPanel: React.FC<RightPanelProps> = ({
           AI Suggested Questions
         </h2>
         <div className="space-y-4 pr-2">
-          {aiSuggestions.map((question) => (
+          {aiSuggestions?.map((question) => (
             <QuestionCard
               key={question}
               question={question}
