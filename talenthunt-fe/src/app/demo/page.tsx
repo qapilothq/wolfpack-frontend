@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -89,15 +89,38 @@ const ResumeMatchDemo: React.FC = () => {
     uploadResume: false,
     fetchProfile: false,
   });
+  const [authtoken, setAuthtoken] = useState<string | null>(null);
 
-  const { authtoken, apiUrl } = useStore();
+  const { apiUrl } = useStore();
   const setLoading = (key: keyof LoadingState, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
 
   const isAnyLoading = Object.values(loadingStates).some((state) => state);
 
+  // Call login when the component mounts
+  useEffect(() => {
+    const login = async () => {
+      try {
+        const response = await axios.post(`${apiUrl}/auth/login`, {
+          username: "test.user",
+          password: "securepassword123",
+        });
+
+        if (!response.data || !response.data.token) {
+          throw new Error("Failed to login");
+        }
+        setAuthtoken(response.data.token);
+      } catch (error) {
+        console.error("Error during login:", error);
+        alert("Failed to login. Please check your credentials.");
+      }
+    };
+    login();
+  }, []);
+
   const createRole = async () => {
+    if (!authtoken) return;
     setLoading("createRole", true);
     try {
       const response = await axios.post(
@@ -127,6 +150,7 @@ const ResumeMatchDemo: React.FC = () => {
   };
 
   const uploadResume = async (file: File) => {
+    if (!authtoken) return;
     setLoading("uploadResume", true);
     console.log("getting signed url");
     try {
@@ -187,6 +211,7 @@ const ResumeMatchDemo: React.FC = () => {
     profileUrl: string,
     jobDescription: string
   ) => {
+    if (!authtoken) return;
     try {
       const response = await axios.post(
         `${apiUrl}/profiles/summary`,
@@ -502,9 +527,9 @@ const ResumeMatchDemo: React.FC = () => {
               {currentStep === 3 && matchResults && (
                 <div className="space-y-6">
                   <div className="flex flex-col md:flex-row justify-between gap-4">
-                    <p className="text-lg font-semibold break-words">
+                    {/* <p className="text-lg font-semibold break-words">
                       {matchResults.name}
-                    </p>
+                    </p> */}
                     <p className="text-lg font-semibold whitespace-nowrap">
                       Profile Score:{" "}
                       <span
