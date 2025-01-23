@@ -102,12 +102,11 @@ const CandidateAssessment: React.FC = () => {
 
     const checkAssessmentTaken = async () => {
       const assessmentResponse = await axios.get(
-        `${apiUrl}/assessments/${profile_id}/${role_id}`
+        `${apiUrl}/assessments/status/${profile_id}/${role_id}`
       );
       const data = await assessmentResponse.data;
-      const candidateResponses = data.data[0]?.assessment ?? [];
-
-      if (candidateResponses.length > 0) {
+      const status = data.status;
+      if (status === "submitted") {
         setTaken(true);
       } else {
         fetchQuestions();

@@ -189,7 +189,9 @@ const Index = () => {
           });
         }
       } else if (file.type === "application/zip") {
-        // New ZIP upload logic
+        console.log("Starting ZIP file upload...");
+
+        // Step 1: Get the upload URL and process ID
         const bulkResponse = await axios.post(
           `${apiUrl}/profiles/createBulkProfiles`,
           {
@@ -202,62 +204,87 @@ const Index = () => {
           }
         );
 
-        if (bulkResponse.status === 200) {
-          const { signedUrl, process_id } = bulkResponse.data;
-          console.log("Bulk Response:", bulkResponse.data);
+        if (bulkResponse.status === 202) {
+          const { message, process_id, upload_url } = bulkResponse.data;
+          console.log("Received upload URL:", upload_url);
+          console.log("Process ID:", process_id);
+          console.log("Message:", message);
 
-          const fileuploadAPI = await fetch(signedUrl, {
+          // Step 2: Upload the ZIP file
+          const fileuploadAPI = await fetch(upload_url, {
             method: "PUT",
             headers: { "Content-Type": "application/octet-stream" },
             body: file,
           });
 
-          if (fileuploadAPI.ok) {
-            // Polling for bulk process completion
-            let status = "";
-            do {
-              const statusResponse = await axios.get(
-                `${apiUrl}/bulk-status/${process_id}`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${authtoken}`,
-                  },
-                }
-              );
+          console.log("Upload response status:", fileuploadAPI.status);
 
-              status = statusResponse.data.status;
-              if (status !== "completed") {
-                await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait for 2 seconds before retrying
+          if (fileuploadAPI.ok) {
+            console.log(
+              "ZIP file uploaded successfully, checking processing status..."
+            );
+
+            // Step 3: Poll for completion status
+            let status = "";
+            let attempts = 0;
+            const maxAttempts = 30; // Prevent infinite polling
+
+            do {
+              try {
+                const statusResponse = await axios.get(
+                  `${apiUrl}/profile/bulk-status/${process_id}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${authtoken}`,
+                    },
+                  }
+                );
+
+                status = statusResponse.data.status;
+                console.log("Current status:", status);
+
+                if (status !== "completed") {
+                  await new Promise((resolve) => setTimeout(resolve, 2000));
+                }
+
+                attempts++;
+                if (attempts >= maxAttempts) {
+                  throw new Error("Processing timeout");
+                }
+              } catch (statusError) {
+                console.error("Error checking status:", statusError);
+                throw statusError;
               }
             } while (status !== "completed");
 
             console.log("Bulk profile creation completed");
             setRefreshTable((prev) => prev + 1);
             toast({
-              title: "Bulk file uploaded successfully!",
+              title: "Bulk file uploaded and processed successfully!",
             });
           } else {
-            toast({
-              variant: "destructive",
-              title: "Failed to upload the ZIP file.",
-            });
+            console.error(
+              "Failed to upload ZIP file:",
+              await fileuploadAPI.text()
+            );
+            throw new Error("Failed to upload ZIP file");
           }
         } else {
-          toast({
-            variant: "destructive",
-            title: "Failed to initiate bulk profile creation.",
-          });
+          throw new Error("Failed to initiate bulk profile creation");
         }
       }
     } catch (error) {
-      console.error("Error uploading file:", error);
+      console.error("Error in upload process:", error);
       toast({
         variant: "destructive",
         title: "An error occurred while uploading the file.",
+        description:
+          error instanceof Error ? error.message : "Unknown error occurred",
       });
+    } finally {
       setIsLoading(false);
+      setIsUploading(false);
     }
-    setIsUploading(false);
   };
   const handleDropdownSelect = (value: string) => {
     setDropdownValue(value);

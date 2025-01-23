@@ -61,7 +61,7 @@ const CreateRoles: React.FC = () => {
     for (const value of roles) {
       try {
         const response = await axios.post(
-          `${apiUrl}/api/roles`,
+          `${apiUrl}/roles`,
           {
             role: {
               name: value.name,

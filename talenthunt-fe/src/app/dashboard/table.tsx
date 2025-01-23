@@ -129,7 +129,6 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
       const candidateid = row.original.id;
       // const assessment_score = row.original.assessment_score;
       const be_status = row.original.status;
-      console.log(row.original);
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -225,7 +224,7 @@ const DataTable: React.FC<Props> = ({
             role_id: roleid,
           },
           headers: {
-            Authorization: `Bearer ${authtoken}`, // Include the authorization token
+            Authorization: `Bearer ${authtoken}`,
             "Content-Type": "application/json",
           },
         });
@@ -235,7 +234,6 @@ const DataTable: React.FC<Props> = ({
         }
 
         const data: Summary[] = response.data;
-        console.log(data);
         setData(data);
       } catch (error) {
         console.error("Error fetching data:", error);
