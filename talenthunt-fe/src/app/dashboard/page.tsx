@@ -134,7 +134,7 @@ const Index = () => {
       console.log("Current status:", status);
 
       if (status !== "completed") {
-        setTimeout(() => checkBulkStatus(process_id), 50000);
+        setTimeout(() => checkBulkStatus(process_id), 5000);
       } else {
         setRefreshTable((prev) => prev + 1);
         toast({
@@ -334,8 +334,8 @@ const Index = () => {
               multiple PDF documents.
             </p>
             {bulkStatus && (
-              <div className="text-sm">
-                <p>
+              <div className="text-sm flex items-center">
+                <p className="flex items-center">
                   Bulk Upload Status:{" "}
                   <span
                     className={`font-semibold ${
@@ -349,7 +349,6 @@ const Index = () => {
                     {bulkStatus}
                   </span>
                 </p>
-                {/* Updated icon logic */}
                 {bulkStatus === "completed" ? (
                   <CheckCircle className="ml-2 text-green-500" size={15} />
                 ) : (
