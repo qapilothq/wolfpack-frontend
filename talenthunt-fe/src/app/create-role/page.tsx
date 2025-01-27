@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PlusIcon, Layers, Save, Edit2Icon } from "lucide-react";
 import { X } from "lucide-react";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import AuthGuard from "../custom-components/Authguard";
 import axios from "axios";
 import useStore from "../stores/store";
@@ -21,6 +21,7 @@ const CreateRoles: React.FC = () => {
   const [currentRole, setCurrentRole] = useState<Role>({ name: "", desc: "" });
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const router = useRouter();
 
   const addOrUpdateRole = (): void => {
     if (!currentRole.name.trim() || !currentRole.desc.trim()) {
@@ -77,6 +78,8 @@ const CreateRoles: React.FC = () => {
 
         if (response.status === 200) {
           console.log(response.data);
+          alert("Role created successfully!");
+          router.push("/dashboard");
         } else {
           console.log("Error");
         }

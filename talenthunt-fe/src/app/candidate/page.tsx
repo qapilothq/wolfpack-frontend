@@ -538,9 +538,20 @@ const CandidateProfile: React.FC = () => {
             <Button
               variant="outline"
               className="hover:bg-gray-100"
-              onClick={() => alert("Assessment Link Sent to the candidate!")}
+              onClick={() => {
+                const baseUrl = window.location.origin;
+                const assessmentLink = `${baseUrl}/assessment?role_id=${role_id}&profile_id=${profile_id}`;
+                navigator.clipboard
+                  .writeText(assessmentLink)
+                  .then(() => {
+                    alert("Assessment link copied to clipboard");
+                  })
+                  .catch((err) => {
+                    console.error("Failed to copy text: ", err);
+                  });
+              }}
             >
-              Send Assessment Link
+              Copy Assessment Link
             </Button>
             <Button
               className="bg-primary hover:bg-primary-dark"
