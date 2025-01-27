@@ -14,16 +14,14 @@ import { Loader2, CheckCircle } from "lucide-react";
 const Index = () => {
   type BulkStatus = "pending" | "processing" | "completed" | "failed" | "";
   const { toast } = useToast();
-  const { authtoken, apiUrl, selectedRole, setSelectedRole } = useStore();
-
-  const [dropdownValue, setDropdownValue] = useState<string>(
-    String(selectedRole)
-  );
+  const [dropdownValue, setDropdownValue] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const [refreshTable, setRefreshTable] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [bulkStatus, setBulkStatus] = useState<BulkStatus>("");
+
+  const { authtoken, apiUrl } = useStore();
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -282,7 +280,6 @@ const Index = () => {
 
   const handleDropdownSelect = (value: string) => {
     setDropdownValue(value);
-    setSelectedRole(value);
     setIsLoading(true);
     console.log("Selected Dropdown Value:", value);
   };
@@ -337,7 +334,7 @@ const Index = () => {
               multiple PDF documents.
             </p>
             {bulkStatus && (
-              <div className="text-sm flex items-center">
+              <div className="text-sm">
                 <p>
                   Bulk Upload Status:{" "}
                   <span
@@ -346,7 +343,7 @@ const Index = () => {
                         ? "text-green-500"
                         : bulkStatus === "processing"
                         ? "text-yellow-500"
-                        : "text-red-500" // pending is red
+                        : "text-red-500"
                     }`}
                   >
                     {bulkStatus}
