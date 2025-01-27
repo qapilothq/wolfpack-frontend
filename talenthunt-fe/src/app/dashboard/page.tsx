@@ -17,6 +17,7 @@ const Index = () => {
   const [refreshTable, setRefreshTable] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const [bulkStatus, setBulkStatus] = useState<string>("");
 
   const { authtoken, apiUrl } = useStore();
 
@@ -115,6 +116,38 @@ const Index = () => {
   //   }
   // };
 
+  const checkBulkStatus = async (process_id: string) => {
+    try {
+      const statusResponse = await axios.get(
+        `${apiUrl}/profiles/bulk-status/${process_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${authtoken}`,
+          },
+        }
+      );
+
+      const status = statusResponse.data.status;
+      setBulkStatus(status);
+      console.log("Current status:", status);
+
+      if (status !== "completed") {
+        setTimeout(() => checkBulkStatus(process_id), 10000);
+      } else {
+        setRefreshTable((prev) => prev + 1);
+        toast({
+          title: "Bulk file processed successfully!",
+        });
+      }
+    } catch (statusError) {
+      console.error("Error checking status:", statusError);
+      toast({
+        variant: "destructive",
+        title: "An error occurred while checking the status.",
+      });
+    }
+  };
+
   const uploadFile = async (file: File) => {
     setIsUploading(true);
     setIsLoading(true);
@@ -205,10 +238,8 @@ const Index = () => {
         );
 
         if (bulkResponse.status === 202) {
-          const { message, process_id, upload_url } = bulkResponse.data;
+          const { process_id, upload_url } = bulkResponse.data;
           console.log("Received upload URL:", upload_url);
-          console.log("Process ID:", process_id);
-          console.log("Message:", message);
 
           // Step 2: Upload the ZIP file
           const fileuploadAPI = await fetch(upload_url, {
@@ -217,51 +248,9 @@ const Index = () => {
             body: file,
           });
 
-          console.log("Upload response status:", fileuploadAPI.status);
-
           if (fileuploadAPI.ok) {
-            console.log(
-              "ZIP file uploaded successfully, checking processing status..."
-            );
-
-            // Step 3: Poll for completion status
-            let status = "";
-            let attempts = 0;
-            const maxAttempts = 30; // Prevent infinite polling
-
-            do {
-              try {
-                const statusResponse = await axios.get(
-                  `${apiUrl}/profile/bulk-status/${process_id}`,
-                  {
-                    headers: {
-                      Authorization: `Bearer ${authtoken}`,
-                    },
-                  }
-                );
-
-                status = statusResponse.data.status;
-                console.log("Current status:", status);
-
-                if (status !== "completed") {
-                  await new Promise((resolve) => setTimeout(resolve, 2000));
-                }
-
-                attempts++;
-                if (attempts >= maxAttempts) {
-                  throw new Error("Processing timeout");
-                }
-              } catch (statusError) {
-                console.error("Error checking status:", statusError);
-                throw statusError;
-              }
-            } while (status !== "completed");
-
-            console.log("Bulk profile creation completed");
-            setRefreshTable((prev) => prev + 1);
-            toast({
-              title: "Bulk file uploaded and processed successfully!",
-            });
+            console.log("ZIP file uploaded successfully");
+            checkBulkStatus(process_id); // Start checking the status
           } else {
             console.error(
               "Failed to upload ZIP file:",
@@ -286,6 +275,7 @@ const Index = () => {
       setIsUploading(false);
     }
   };
+
   const handleDropdownSelect = (value: string) => {
     setDropdownValue(value);
     setIsLoading(true);
@@ -337,10 +327,28 @@ const Index = () => {
         </div>
         {dropdownValue && (
           <div className="max-w-full md:max-w-4xl mx-auto bg-white shadow-xl rounded-2xl">
-            <p className="text-sm text-gray-500 mb-2">
+            <p className="text-sm text-gray-500">
               You can bulk upload resumes by selecting a ZIP file containing
               multiple PDF documents.
             </p>
+            {bulkStatus && (
+              <div className="text-sm">
+                <p>
+                  Bulk Upload Status:{" "}
+                  <span
+                    className={`font-semibold ${
+                      bulkStatus === "completed"
+                        ? "text-green-500"
+                        : bulkStatus === "processing"
+                        ? "text-yellow-500"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {bulkStatus}
+                  </span>
+                </p>
+              </div>
+            )}
             <DataTable
               roleid={dropdownValue}
               refreshTrigger={refreshTable}
