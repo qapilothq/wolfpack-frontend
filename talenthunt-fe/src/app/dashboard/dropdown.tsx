@@ -1,7 +1,5 @@
-"use client";
 import React, { useEffect } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,25 +18,7 @@ import {
 import useStore from "../stores/store";
 import axios from "axios";
 
-// const jobtitle = [
-//     {
-//       label: "Solution Architect",
-//       value: "SA",
-//     },
-//     {
-//       label: "Software Developer",
-//       value: "SD",
-//     },
-//     {
-//       label: "Frontend Developer",
-//       value: "FD",
-//     },
-//     {
-//       label: "Product Manager",
-//       value: "PM",
-//     },
-//   ]
-type props = {
+type Props = {
   selectedValue: string;
   onSelect: (value: string) => void;
 };
@@ -48,14 +28,25 @@ interface JobData {
   name: string;
 }
 
-const Combobox: React.FC<props> = ({ selectedValue, onSelect }) => {
+interface RoleData {
+  id: string;
+  name: string;
+}
+const Combobox: React.FC<Props> = ({ selectedValue, onSelect }) => {
   const [open, setOpen] = React.useState(false);
-  const [data, setData] = React.useState<JobData[]>([]);
+  const [data, setData] = React.useState<JobData[]>(() => {
+    const storedRoles = sessionStorage.getItem("ROLES");
+    return storedRoles ? JSON.parse(storedRoles) : [];
+  });
+  const [isLoading, setIsLoading] = React.useState(!data.length);
 
-  const { authtoken, apiUrl } = useStore();
+  const { authtoken, apiUrl, selectedRole } = useStore();
 
   useEffect(() => {
     const fetchJD = async () => {
+      if (data.length > 0) return;
+
+      setIsLoading(true);
       try {
         const response = await axios.get(`${apiUrl}/roles`, {
           headers: {
@@ -63,20 +54,44 @@ const Combobox: React.FC<props> = ({ selectedValue, onSelect }) => {
           },
         });
         if (response.status === 200) {
-          const data = response.data;
-          setData(data);
-          sessionStorage.setItem("ROLES", JSON.stringify(data));
-          console.log(data);
-        } else {
-          console.log("Error");
+          const newData = response.data.map((role: RoleData) => ({
+            ...role,
+            id: String(role.id),
+          }));
+          setData(newData);
+          console.log("Data loaded from API:", newData);
+          sessionStorage.setItem("ROLES", JSON.stringify(newData));
         }
       } catch (error) {
         console.error("Fetch error:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchJD();
-  }, [authtoken, apiUrl]);
+  }, [authtoken, apiUrl, data.length]);
+
+  const getSelectedJobTitle = () => {
+    if (isLoading) return "Loading...";
+
+    const effectiveValue = selectedValue || selectedRole;
+    if (!effectiveValue) return "Select Job title...";
+
+    // Ensure we're comparing strings
+    const effectiveValueStr = String(effectiveValue);
+    console.log("Looking for job with ID:", effectiveValueStr);
+    console.log("Available jobs:", data);
+
+    const selectedJob = data.find(
+      (job) => String(job.id) === effectiveValueStr
+    );
+    console.log("Found job:", selectedJob);
+
+    return selectedJob?.name || "Search Job Title...";
+  };
+
+  const selectedJobTitle = getSelectedJobTitle();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -86,10 +101,9 @@ const Combobox: React.FC<props> = ({ selectedValue, onSelect }) => {
           role="combobox"
           aria-expanded={open}
           className="w-[300px] justify-between"
+          disabled={isLoading}
         >
-          {selectedValue
-            ? data.find((data) => data.id === selectedValue)?.name
-            : "Select Job title..."}
+          {selectedJobTitle}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -97,23 +111,26 @@ const Combobox: React.FC<props> = ({ selectedValue, onSelect }) => {
         <Command>
           <CommandInput placeholder="Search Job Title..." />
           <CommandList>
-            <CommandEmpty>No framework found.</CommandEmpty>
+            <CommandEmpty>No job titles found.</CommandEmpty>
             <CommandGroup>
-              {data.map((data) => (
+              {data.map((job) => (
                 <CommandItem
-                  key={data.id}
+                  key={job.id}
                   onSelect={() => {
-                    onSelect(data.id);
+                    onSelect(job.id);
                     setOpen(false);
                   }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      selectedValue === data.id ? "opacity-100" : "opacity-0"
+                      String(selectedValue) === String(job.id) ||
+                        String(selectedRole) === String(job.id)
+                        ? "opacity-100"
+                        : "opacity-0"
                     )}
                   />
-                  {data.name}
+                  {job.name}
                 </CommandItem>
               ))}
             </CommandGroup>

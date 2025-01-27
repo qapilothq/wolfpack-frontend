@@ -9,17 +9,21 @@ import AuthGuard from "../custom-components/Authguard";
 import { useRouter } from "next/navigation";
 import useStore from "../stores/store";
 import axios from "axios";
+import { Loader2, CheckCircle } from "lucide-react";
 
 const Index = () => {
+  type BulkStatus = "pending" | "processing" | "completed" | "failed" | "";
   const { toast } = useToast();
-  const [dropdownValue, setDropdownValue] = useState<string>("");
+  const { authtoken, apiUrl, selectedRole, setSelectedRole } = useStore();
+
+  const [dropdownValue, setDropdownValue] = useState<string>(
+    String(selectedRole)
+  );
   const [isUploading, setIsUploading] = useState(false);
   const [refreshTable, setRefreshTable] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const [bulkStatus, setBulkStatus] = useState<string>("");
-
-  const { authtoken, apiUrl } = useStore();
+  const [bulkStatus, setBulkStatus] = useState<BulkStatus>("");
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -132,7 +136,7 @@ const Index = () => {
       console.log("Current status:", status);
 
       if (status !== "completed") {
-        setTimeout(() => checkBulkStatus(process_id), 10000);
+        setTimeout(() => checkBulkStatus(process_id), 50000);
       } else {
         setRefreshTable((prev) => prev + 1);
         toast({
@@ -278,6 +282,7 @@ const Index = () => {
 
   const handleDropdownSelect = (value: string) => {
     setDropdownValue(value);
+    setSelectedRole(value);
     setIsLoading(true);
     console.log("Selected Dropdown Value:", value);
   };
@@ -332,7 +337,7 @@ const Index = () => {
               multiple PDF documents.
             </p>
             {bulkStatus && (
-              <div className="text-sm">
+              <div className="text-sm flex items-center">
                 <p>
                   Bulk Upload Status:{" "}
                   <span
@@ -341,12 +346,25 @@ const Index = () => {
                         ? "text-green-500"
                         : bulkStatus === "processing"
                         ? "text-yellow-500"
-                        : "text-red-500"
+                        : "text-red-500" // pending is red
                     }`}
                   >
                     {bulkStatus}
                   </span>
                 </p>
+                {/* Updated icon logic */}
+                {bulkStatus === "completed" ? (
+                  <CheckCircle className="ml-2 text-green-500" size={15} />
+                ) : (
+                  <Loader2
+                    className={`animate-spin ml-2 ${
+                      bulkStatus === "processing"
+                        ? "text-yellow-500"
+                        : "text-red-500"
+                    }`}
+                    size={15}
+                  />
+                )}
               </div>
             )}
             <DataTable
