@@ -223,7 +223,10 @@ const Index = () => {
             title: "Failed to upload the file.",
           });
         }
-      } else if (file.type === "application/zip") {
+      } else if (
+        file.type === "application/zip" ||
+        file.type === "application/x-zip-compressed"
+      ) {
         console.log("Starting ZIP file upload...");
 
         // Step 1: Get the upload URL and process ID
