@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { createAuthSlice, AuthState } from "./authSlice";
 
 type CombinedState = AuthState;
@@ -11,6 +11,7 @@ const useStore = create<CombinedState>()(
     }),
     {
       name: "auth-storage",
+      storage: createJSONStorage(() => sessionStorage),
     }
   )
 );
