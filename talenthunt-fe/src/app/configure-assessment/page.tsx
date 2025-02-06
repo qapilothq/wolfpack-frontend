@@ -87,11 +87,7 @@ const Assessment: React.FC = () => {
       setQuestionsAdded([]);
     } catch (error) {
       console.error("Error configuring assessment:", error);
-      toast({
-        title: "Error",
-        description: "Failed to configure assessment. Please try again.",
-        variant: "destructive",
-      });
+      alert("Failed to configure assessment. Please try again.");
     } finally {
       setIsConfiguring(false);
     }
@@ -204,11 +200,13 @@ const Assessment: React.FC = () => {
   }, [selectedRole, isAuthReady, apiUrl, authtoken]);
 
   const addOrRemoveQuestion = (question: string) => {
-    setQuestionsAdded((prev) =>
-      prev.includes(question)
-        ? prev.filter((q) => q !== question)
-        : [...prev, question]
-    );
+    setQuestionsAdded((prev) => {
+      if (prev.includes(question)) {
+        return prev.filter((q) => q !== question);
+      } else {
+        return [...prev, question];
+      }
+    });
   };
 
   // Show loading state while waiting for auth
@@ -441,12 +439,48 @@ const Leftpanel: React.FC<LeftpanelProps> = ({
   addCustomQuestion,
 }) => {
   const [newQuestion, setNewQuestion] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
   const handleAddCustomQuestion = () => {
-    if (newQuestion.trim()) {
-      // Add the custom question instead of removing it
-      addCustomQuestion(newQuestion);
-      setNewQuestion("");
+    const trimmedQuestion = newQuestion.trim();
+
+    if (!trimmedQuestion) {
+      setError("Question cannot be empty");
+      return;
+    }
+
+    // Check for exact duplicates (case-insensitive)
+    const isDuplicate = questionsAdded.some(
+      (q) => q.toLowerCase() === trimmedQuestion.toLowerCase()
+    );
+
+    // Check for similar questions (optional)
+    const isSimilar = questionsAdded.some(
+      (q) =>
+        q.toLowerCase().includes(trimmedQuestion.toLowerCase()) ||
+        trimmedQuestion.toLowerCase().includes(q.toLowerCase())
+    );
+
+    if (isDuplicate) {
+      alert("This question has already been added to the list.");
+      return;
+    }
+
+    if (isSimilar) {
+      alert(
+        "A similar question might already exist in the list. Please review before adding."
+      );
+      // Still allow adding the question, but with a warning
+    }
+
+    addCustomQuestion(trimmedQuestion);
+    setNewQuestion("");
+    setError("");
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleAddCustomQuestion();
     }
   };
 
@@ -454,7 +488,7 @@ const Leftpanel: React.FC<LeftpanelProps> = ({
     <div className="bg-gray-100 h-full rounded-xl p-6 space-y-4">
       <div>
         <h2 className="font-bold text-xl text-gray-800 mb-4">
-          Added Questions
+          Added Questions ({questionsAdded.length})
         </h2>
         {questionsAdded.length === 0 ? (
           <div className="text-gray-500 italic text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
@@ -465,15 +499,16 @@ const Leftpanel: React.FC<LeftpanelProps> = ({
             {questionsAdded.map((question, index) => (
               <div
                 key={index}
-                className="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center"
+                className="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center group hover:bg-gray-50 transition-colors"
               >
-                <span className="text-gray-700">{`${
+                <span className="text-gray-700 flex-1">{`${
                   index + 1
                 }. ${question}`}</span>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => removeQuestion(question)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <TrashIcon className="h-4 w-4 text-red-500" />
                 </Button>
@@ -483,21 +518,28 @@ const Leftpanel: React.FC<LeftpanelProps> = ({
         )}
       </div>
 
-      <div className="flex space-x-2">
-        <Input
-          type="text"
-          value={newQuestion}
-          onChange={(e) => setNewQuestion(e.target.value)}
-          placeholder="Add a custom question"
-          className="flex-grow"
-        />
-        <Button
-          onClick={handleAddCustomQuestion}
-          disabled={!newQuestion.trim()}
-        >
-          <PlusIcon className="mr-2 h-4 w-4" />
-          Add
-        </Button>
+      <div className="space-y-2">
+        <div className="flex space-x-2">
+          <Input
+            type="text"
+            value={newQuestion}
+            onChange={(e) => {
+              setNewQuestion(e.target.value);
+              setError("");
+            }}
+            onKeyPress={handleKeyPress}
+            placeholder="Add a custom question"
+            className={`flex-grow ${error ? "border-red-500" : ""}`}
+          />
+          <Button
+            onClick={handleAddCustomQuestion}
+            disabled={!newQuestion.trim()}
+          >
+            <PlusIcon className="mr-2 h-4 w-4" />
+            Add
+          </Button>
+        </div>
+        {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
       </div>
     </div>
   );

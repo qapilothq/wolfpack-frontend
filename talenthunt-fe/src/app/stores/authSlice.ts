@@ -10,7 +10,7 @@ export interface AuthState {
 export const createAuthSlice: StateCreator<AuthState> = (set) => ({
   isLoggedIn: false,
   authtoken: "",
-  apiUrl: "https://wolfpack.yupiter.tech/api",
+  apiUrl: "https://wolfpackapi.yupiter.tech/api",
   setAuthtoken: (authtoken) => set({ authtoken }),
   setIsLoggedIn: (isLoggedIn) => set({ isLoggedIn }),
 });

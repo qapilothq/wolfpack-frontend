@@ -156,7 +156,7 @@ const CandidateProfile: React.FC = () => {
             <CardTitle className="text-center text-red-500">Error</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-center">{error}</p>
+            <p className="text-center">User profle not available</p>
             <div className="mt-4 flex justify-center">
               <Button onClick={() => window.history.back()} variant="outline">
                 Go Back

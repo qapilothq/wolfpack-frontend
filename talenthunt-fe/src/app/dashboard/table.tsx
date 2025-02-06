@@ -53,6 +53,13 @@ export type Summary = {
   role_id: number;
 };
 
+const scaleScore = (score: number): number => {
+  if (score > 0) {
+    return Math.ceil(score / 20); // Scale score to 1-5 based on ranges
+  }
+  return 0; // Return 0 if score is not positive
+};
+
 // Function to create columns with role_id
 export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
   {
@@ -67,14 +74,16 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
   },
   {
     accessorKey: "score",
-    header: () => <div className="">Profile Score</div>,
+    header: () => <div className="">Profile Score (out of 5)</div>,
     cell: ({ row }) => {
-      const score = row.getValue("score") as number; // Type assertion to number
-      const displayScore =
-        score !== undefined && score !== null
-          ? parseFloat(String(score))
-          : "---";
-      const scoreColor = score > 40 ? "text-green-600" : "text-red-600"; // Green for eligible, red for not eligible
+      const rawScore = row.getValue("score") as number;
+      const score =
+        rawScore !== undefined && rawScore !== null
+          ? scaleScore(rawScore)
+          : null;
+      const displayScore = score !== null ? score : "---";
+      const scoreColor =
+        score !== null && score >= 3 ? "text-green-600" : "text-red-600"; // Ensure score is not null
       return <div className={`font-bold ${scoreColor}`}>{displayScore}</div>;
     },
   },
@@ -94,17 +103,17 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
           : status === "assessment_generated"
           ? "Assessment Generated"
           : status === "accepted"
-          ? "Assesment Pending"
+          ? "Assessment Pending"
           : status;
 
       if (status === "assessment_evaluated") {
-        color = "text-blue-600"; // Deep blue for evaluated
+        color = "text-blue-600";
       } else if (status === "assessment_submitted") {
-        color = "text-yellow-600"; // Deeper yellow for submitted
+        color = "text-yellow-600";
       } else if (status === "assessment_generated") {
-        color = "text-purple-500"; // Purple for generated
+        color = "text-purple-500";
       } else if (status === "accepted") {
-        color = "text-orange-500"; // Orange for processing
+        color = "text-orange-500";
       }
 
       return <div className={`capitalize ${color}`}>{name}</div>;
@@ -127,7 +136,6 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
     enableHiding: false,
     cell: ({ row }) => {
       const candidateid = row.original.id;
-      // const assessment_score = row.original.assessment_score;
       const be_status = row.original.status;
       return (
         <DropdownMenu>
@@ -285,41 +293,57 @@ const DataTable: React.FC<Props> = ({
     );
   }
 
-  // Rest of the component remains the same...
   return (
-    <div className="w-full">
-      <ScrollArea className="rounded-md border" style={{ maxHeight: "500px" }}>
-        <div className="overflow-x-auto">
-          <Table className="w-full">
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      className="text-black sticky top-0 bg-white z-10 text-xs sm:text-sm"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
+    <div className="flex flex-col h-full min-h-[500px] relative bg-white rounded-md border">
+      {/* Fixed Header */}
+      <div className="sticky top-0 z-20 bg-white border-b">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="bg-gray-50">
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className="text-black bg-gray-50 text-xs sm:text-sm font-semibold px-4 py-3"
+                    style={{
+                      minWidth: header.id === "actions" ? "100px" : "150px",
+                    }}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+        </Table>
+      </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-grow overflow-hidden">
+        <ScrollArea className="h-[calc(100vh-450px)] min-h-[400px]">
+          <Table>
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="text-xs sm:text-sm"
+                    className="text-xs sm:text-sm hover:bg-gray-50 transition-colors"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="p-2 sm:p-4">
+                      <TableCell
+                        key={cell.id}
+                        className="px-4 py-3"
+                        style={{
+                          minWidth:
+                            cell.column.id === "actions" ? "100px" : "150px",
+                        }}
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -332,47 +356,48 @@ const DataTable: React.FC<Props> = ({
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="h-24 text-center"
+                    className="h-24 text-center text-gray-500"
                   >
-                    No results.
+                    No results found.
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </div>
-      </ScrollArea>
+        </ScrollArea>
+      </div>
 
-      <div className="flex flex-col md:flex-row items-center justify-between space-y-2 md:space-y-0 md:space-x-2 py-4 px-2">
-        <div className="text-xs sm:text-sm text-muted-foreground text-center w-full md:text-left md:w-auto">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
-        <div className="flex items-center justify-center space-x-2 w-full md:w-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            className="p-2"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            <span className="sr-only">Previous</span>
-          </Button>
-          <span className="text-xs sm:text-sm">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            className="p-2"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            <ChevronRight className="h-4 w-4" />
-            <span className="sr-only">Next</span>
-          </Button>
+      {/* Fixed Pagination Controls */}
+      <div className="border-t bg-white py-4 px-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">
+            Showing {table.getRowModel().rows.length} of {data.length}{" "}
+            candidates
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-xs sm:text-sm px-2 whitespace-nowrap">
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getPageCount()}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

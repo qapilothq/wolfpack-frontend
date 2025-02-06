@@ -9,7 +9,7 @@ import AuthGuard from "../custom-components/Authguard";
 import { useRouter } from "next/navigation";
 import useStore from "../stores/store";
 import axios from "axios";
-import { Loader2, CheckCircle } from "lucide-react";
+import { Loader2, CheckCircle, CircleX } from "lucide-react";
 
 const Index = () => {
   type BulkStatus = "pending" | "processing" | "completed" | "failed" | "";
@@ -133,7 +133,13 @@ const Index = () => {
       setBulkStatus(status);
       console.log("Current status:", status);
 
-      if (status !== "completed") {
+      if (status === "failed") {
+        alert("Bulk upload failed.");
+        toast({
+          variant: "destructive",
+          title: "Bulk upload failed.",
+        });
+      } else if (status !== "completed") {
         setTimeout(() => checkBulkStatus(process_id), 5000);
       } else {
         setRefreshTable((prev) => prev + 1);
@@ -354,6 +360,8 @@ const Index = () => {
                 </p>
                 {bulkStatus === "completed" ? (
                   <CheckCircle className="ml-2 text-green-500" size={15} />
+                ) : bulkStatus === "failed" ? (
+                  <CircleX className="ml-2 text-red-500" size={15} />
                 ) : (
                   <Loader2
                     className={`animate-spin ml-2 ${
