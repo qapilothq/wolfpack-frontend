@@ -124,7 +124,7 @@ const CandidateProfile: React.FC = () => {
     return score < 3 ? "#ef4444" : "#22c55e"; // red-500 for low scores, green-500 for high scores
   };
 
-  const scaledProfileScore = scaleScoreTo5(5);
+  const scaledProfileScore = scaleScoreTo5(getProf?.score);
 
   useEffect(() => {
     const getUserData = async () => {
