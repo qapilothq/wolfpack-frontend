@@ -106,6 +106,27 @@ const CandidateProfile: React.FC = () => {
     setgetProf(profjson);
   }, [role_id]);
 
+  const scaleScoreTo5 = (score: number | undefined): number => {
+    if (!score) return 0;
+
+    // If score is already between 0-5, return as is
+    if (score <= 5) return Math.round(score);
+
+    // Scale down scores that are out of 100
+    if (score <= 20) return 1;
+    if (score <= 40) return 2;
+    if (score <= 60) return 3;
+    if (score <= 80) return 4;
+    return 5;
+  };
+
+  const getScoreColor = (score: number): string => {
+    return score < 3 ? "#ef4444" : "#22c55e"; // red-500 for low scores, green-500 for high scores
+  };
+
+  const scaledProfileScore = scaleScoreTo5(getProf?.score);
+  const scorePercentage = (scaledProfileScore / 5) * 100;
+
   useEffect(() => {
     const getUserData = async () => {
       if (!authtoken || !profile_id || !apiUrl) {
@@ -246,10 +267,13 @@ const CandidateProfile: React.FC = () => {
                 >
                   <RadialBarChart
                     data={[
-                      { score: getProf?.score, fill: "var(--color-score)" },
+                      {
+                        score: scorePercentage, // Use the calculated percentage
+                        fill: getScoreColor(scaledProfileScore),
+                      },
                     ]}
                     startAngle={0}
-                    endAngle={200}
+                    endAngle={360} // Full circle
                     innerRadius={80}
                     outerRadius={110}
                   >
@@ -260,7 +284,11 @@ const CandidateProfile: React.FC = () => {
                       className="first:fill-muted last:fill-background"
                       polarRadius={[86, 74]}
                     />
-                    <RadialBar dataKey="score" background cornerRadius={10} />
+                    <RadialBar
+                      dataKey="score"
+                      background={{ fill: "#f3f4f6" }} // Light gray background
+                      cornerRadius={10}
+                    />
                     <PolarRadiusAxis
                       tick={false}
                       tickLine={false}
@@ -279,9 +307,12 @@ const CandidateProfile: React.FC = () => {
                                 <tspan
                                   x={viewBox.cx}
                                   y={viewBox.cy}
-                                  className="fill-foreground text-4xl font-bold"
+                                  className="text-4xl font-bold"
+                                  style={{
+                                    fill: getScoreColor(scaledProfileScore),
+                                  }}
                                 >
-                                  {getProf?.score?.toLocaleString()}
+                                  {scaledProfileScore} / 5
                                 </tspan>
                                 <tspan
                                   x={viewBox.cx}

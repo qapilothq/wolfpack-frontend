@@ -534,12 +534,12 @@ const ResumeMatchDemo: React.FC = () => {
                       Profile Score:{" "}
                       <span
                         className={
-                          matchResults.profileScore > 40
+                          matchResults.profileScore >= 3
                             ? "text-green-600"
                             : "text-red-600"
                         }
                       >
-                        {matchResults.profileScore}%
+                        {matchResults.profileScore}/5
                       </span>
                     </p>
                   </div>
