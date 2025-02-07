@@ -124,7 +124,7 @@ const CandidateProfile: React.FC = () => {
     return score < 3 ? "#ef4444" : "#22c55e"; // red-500 for low scores, green-500 for high scores
   };
 
-  const scaledProfileScore = scaleScoreTo5(getProf?.score);
+  const scaledProfileScore = scaleScoreTo5(5);
   const scorePercentage = (scaledProfileScore / 5) * 100;
 
   useEffect(() => {
@@ -268,12 +268,12 @@ const CandidateProfile: React.FC = () => {
                   <RadialBarChart
                     data={[
                       {
-                        score: scorePercentage, // Use the calculated percentage
+                        score: scaledProfileScore,
                         fill: getScoreColor(scaledProfileScore),
                       },
                     ]}
                     startAngle={0}
-                    endAngle={360} // Full circle
+                    endAngle={(scaledProfileScore / 5) * 360}
                     innerRadius={80}
                     outerRadius={110}
                   >
