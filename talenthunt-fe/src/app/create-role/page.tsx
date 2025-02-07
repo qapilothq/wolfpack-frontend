@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PlusIcon, Layers, Save, Edit2Icon } from "lucide-react";
 import { X } from "lucide-react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import AuthGuard from "../custom-components/Authguard";
 import axios from "axios";
 import useStore from "../stores/store";
@@ -59,38 +59,49 @@ const CreateRoles: React.FC = () => {
   const submitHandler = async (): Promise<void> => {
     setIsLoading(true);
     console.log("Roles submitted:", roles);
-    for (const value of roles) {
-      try {
-        const response = await axios.post(
-          `${apiUrl}/roles`,
-          {
-            role: {
-              name: value.name,
-              job_description: value.desc,
-            },
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${authtoken}`,
-            },
-          }
-        );
 
-        if (response.status === 200) {
-          console.log(response.data);
-          alert("Role created successfully!");
-          router.push("/dashboard");
-        } else {
-          console.log("Error");
+    const failedRoles: string[] = [];
+
+    await Promise.all(
+      roles.map(async (value) => {
+        try {
+          const response = await axios.post(
+            `${apiUrl}/roles`,
+            {
+              role: {
+                name: value.name,
+                job_description: value.desc,
+              },
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${authtoken}`,
+              },
+            }
+          );
+
+          if (response.status === 200) {
+            console.log(response.data);
+          } else {
+            console.log("Error");
+            failedRoles.push(value.name);
+          }
+        } catch (error) {
+          console.error("Fetch error:", error);
+          failedRoles.push(value.name);
         }
-      } catch (error) {
-        console.error("Fetch error:", error);
-      }
+      })
+    );
+
+    if (failedRoles.length > 0) {
+      alert(`Failed to create roles: ${failedRoles.join(", ")}`);
+    } else {
+      alert("All roles created successfully!");
     }
 
     setRoles([]);
     setIsLoading(false);
-    redirect("/dashboard");
+    router.push("/dashboard");
   };
 
   return (
