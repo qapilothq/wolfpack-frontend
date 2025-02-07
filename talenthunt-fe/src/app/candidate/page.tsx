@@ -125,7 +125,6 @@ const CandidateProfile: React.FC = () => {
   };
 
   const scaledProfileScore = scaleScoreTo5(5);
-  const scorePercentage = (scaledProfileScore / 5) * 100;
 
   useEffect(() => {
     const getUserData = async () => {
