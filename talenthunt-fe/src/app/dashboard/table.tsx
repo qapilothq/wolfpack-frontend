@@ -54,10 +54,10 @@ export type Summary = {
 };
 
 const scaleScore = (score: number): number => {
-  if (score > 0) {
+  if (score > 5) {
     return Math.ceil(score / 20); // Scale score to 1-5 based on ranges
   }
-  return 0; // Return 0 if score is not positive
+  return score; // Return the score directly if it's 5 or less
 };
 
 // Function to create columns with role_id
