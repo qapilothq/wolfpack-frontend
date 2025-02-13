@@ -13,7 +13,12 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  MoreHorizontal,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -32,7 +37,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { redirect } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
 import useStore from "../stores/store";
@@ -73,7 +77,7 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
   },
   {
     accessorKey: "score",
-    header: () => <div className="">Profile Score (out of 5)</div>,
+    header: () => <div>Profile Score (out of 5)</div>,
     cell: ({ row }) => {
       const rawScore = row.getValue("score") as number;
       const score =
@@ -82,7 +86,7 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
           : null;
       const displayScore = score !== null ? score : "---";
       const scoreColor =
-        score !== null && score >= 3 ? "text-green-600" : "text-red-600"; // Ensure score is not null
+        score !== null && score >= 3 ? "text-green-600" : "text-red-600";
       return <div className={`font-bold ${scoreColor}`}>{displayScore}</div>;
     },
   },
@@ -120,7 +124,7 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
   },
   {
     accessorKey: "assessmentscore",
-    header: () => <div className="">Assessment score</div>,
+    header: () => <div>Assessment score</div>,
     cell: ({ row }) => {
       const finalscore = row.original.assessment_score;
       const sc: string =
@@ -158,9 +162,9 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
             >
               Profile View
             </DropdownMenuItem>
-            {be_status === "accepted" ||
-            be_status === null ||
-            be_status === "assessment_generated" ? (
+            {(be_status === "accepted" ||
+              be_status === null ||
+              be_status === "assessment_generated") && (
               <DropdownMenuItem
                 onClick={() => {
                   const baseUrl = window.location.origin;
@@ -177,8 +181,8 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
               >
                 Copy Assessment Link
               </DropdownMenuItem>
-            ) : null}
-            {be_status === "assessment_submitted" ? (
+            )}
+            {be_status === "assessment_submitted" && (
               <DropdownMenuItem>
                 <Link
                   href={`/assessment-result?role_id=${role_id}&profile_id=${candidateid}`}
@@ -186,7 +190,7 @@ export const createColumns = (role_id: string): ColumnDef<Summary>[] => [
                   Evaluate Assessment
                 </Link>
               </DropdownMenuItem>
-            ) : null}
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -293,13 +297,13 @@ const DataTable: React.FC<Props> = ({
   }
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-md border">
-      {/* Table Container with fixed height */}
+    <div className="flex flex-col h-full w-full bg-white rounded-md border">
+      {/* Table Container */}
       <div className="relative">
-        {/* Header - Always visible */}
+        {/* Header – Always visible */}
         <div className="sticky top-0 z-20 bg-white border-b">
           <div className="overflow-hidden">
-            <Table>
+            <Table className="w-full">
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id} className="bg-gray-50">
@@ -324,42 +328,45 @@ const DataTable: React.FC<Props> = ({
         </div>
 
         {/* Scrollable body */}
-        <div className="overflow-auto h-[calc(100vh-450px)] min-h-[400px]">
-          <Table>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    className="text-xs sm:text-sm hover:bg-gray-50 transition-colors"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="px-4 py-3">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
+        <div className="overflow-auto w-full h-[calc(100vh-450px)] min-h-[400px]">
+          {/* Wrap the table to enable horizontal scrolling if needed */}
+          <div className="w-full overflow-x-auto">
+            <Table className="min-w-full">
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                      className="text-xs sm:text-sm hover:bg-gray-50 transition-colors"
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="px-4 py-3">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center text-gray-500"
+                    >
+                      No results found.
+                    </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center text-gray-500"
-                  >
-                    No results found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
 
-      {/* Pagination - Always visible at bottom */}
+      {/* Pagination – Always visible at bottom */}
       <div className="border-t bg-white py-4 px-4 mt-auto">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-xs sm:text-sm text-gray-600">
