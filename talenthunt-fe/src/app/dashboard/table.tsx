@@ -32,7 +32,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { redirect } from "next/navigation";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
@@ -294,38 +293,38 @@ const DataTable: React.FC<Props> = ({
   }
 
   return (
-    <div className="flex flex-col h-full min-h-[500px] relative bg-white rounded-md border">
-      {/* Fixed Header */}
-      <div className="sticky top-0 z-20 bg-white border-b">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="bg-gray-50">
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="text-black bg-gray-50 text-xs sm:text-sm font-semibold px-4 py-3"
-                    style={{
-                      minWidth: header.id === "actions" ? "100px" : "150px",
-                    }}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
+    <div className="flex flex-col h-full bg-white rounded-md border">
+      {/* Table Container with fixed height */}
+      <div className="relative">
+        {/* Header - Always visible */}
+        <div className="sticky top-0 z-20 bg-white border-b">
+          <div className="overflow-hidden">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id} className="bg-gray-50">
+                    {headerGroup.headers.map((header) => (
+                      <TableHead
+                        key={header.id}
+                        className="text-black bg-gray-50 text-xs sm:text-sm font-semibold px-4 py-3"
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    ))}
+                  </TableRow>
                 ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-        </Table>
-      </div>
+              </TableHeader>
+            </Table>
+          </div>
+        </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-grow overflow-hidden">
-        <ScrollArea className="h-[calc(100vh-450px)] min-h-[400px]">
+        {/* Scrollable body */}
+        <div className="overflow-auto h-[calc(100vh-450px)] min-h-[400px]">
           <Table>
             <TableBody>
               {table.getRowModel().rows?.length ? (
@@ -336,14 +335,7 @@ const DataTable: React.FC<Props> = ({
                     className="text-xs sm:text-sm hover:bg-gray-50 transition-colors"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className="px-4 py-3"
-                        style={{
-                          minWidth:
-                            cell.column.id === "actions" ? "100px" : "150px",
-                        }}
-                      >
+                      <TableCell key={cell.id} className="px-4 py-3">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -364,13 +356,13 @@ const DataTable: React.FC<Props> = ({
               )}
             </TableBody>
           </Table>
-        </ScrollArea>
+        </div>
       </div>
 
-      {/* Fixed Pagination Controls */}
-      <div className="border-t bg-white py-4 px-4">
+      {/* Pagination - Always visible at bottom */}
+      <div className="border-t bg-white py-4 px-4 mt-auto">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">
+          <div className="text-xs sm:text-sm text-gray-600">
             Showing {table.getRowModel().rows.length} of {data.length}{" "}
             candidates
           </div>
@@ -384,7 +376,7 @@ const DataTable: React.FC<Props> = ({
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-xs sm:text-sm px-2 whitespace-nowrap">
+            <span className="text-xs sm:text-sm px-2">
               Page {table.getState().pagination.pageIndex + 1} of{" "}
               {table.getPageCount()}
             </span>
