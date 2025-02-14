@@ -327,7 +327,7 @@ const DataTable: React.FC<Props> = ({
 
       {/* Scrollable Table Body */}
       <div className="flex-1 overflow-y-auto">
-        <ScrollArea className="w-full h-full">
+        <ScrollArea className="max-h-[calc(100vh-150px)] lg:max-h-[calc(100vh-450px)] w-full overflow-y-auto">
           <Table>
             <TableBody>
               {table.getRowModel().rows?.length ? (
