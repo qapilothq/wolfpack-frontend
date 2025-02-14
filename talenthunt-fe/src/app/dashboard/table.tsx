@@ -27,7 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
   TableBody,
@@ -297,77 +297,76 @@ const DataTable: React.FC<Props> = ({
   }
 
   return (
-    <div className="flex flex-col h-full w-full bg-white rounded-md border">
-      {/* Table Container */}
-      <div className="relative">
-        {/* Header – Always visible */}
+    <div className="flex flex-col h-full relative bg-white rounded-md border">
+      {/* Fixed Header */}
+      <div className="overflow-x-auto">
         <div className="sticky top-0 z-20 bg-white border-b">
-          <div className="overflow-hidden">
-            <Table className="w-full">
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id} className="bg-gray-50">
-                    {headerGroup.headers.map((header) => (
-                      <TableHead
-                        key={header.id}
-                        className="text-black bg-gray-50 text-xs sm:text-sm font-semibold px-4 py-3"
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-            </Table>
-          </div>
-        </div>
-
-        {/* Scrollable body */}
-        <div className="overflow-auto w-full h-[calc(100vh-450px)] min-h-[400px]">
-          {/* Wrap the table to enable horizontal scrolling if needed */}
-          <div className="w-full overflow-x-auto">
-            <Table className="min-w-full">
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                      className="text-xs sm:text-sm hover:bg-gray-50 transition-colors"
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id} className="bg-gray-50">
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className="text-black bg-gray-50 text-xs sm:text-sm font-semibold px-4 py-3 whitespace-nowrap"
                     >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="px-4 py-3">
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
                           )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center text-gray-500"
-                    >
-                      No results found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+          </Table>
         </div>
       </div>
 
-      {/* Pagination – Always visible at bottom */}
-      <div className="border-t bg-white py-4 px-4 mt-auto">
+      {/* Scrollable Table Body */}
+      <div className="flex-1 overflow-y-auto">
+        <ScrollArea className="w-full h-full">
+          <Table>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="text-xs sm:text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className="px-4 py-3 whitespace-nowrap"
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center text-gray-500"
+                  >
+                    No results found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </ScrollArea>
+      </div>
+
+      {/* Pagination Controls (sticky on larger screens) */}
+      <div className="sm:sticky sm:bottom-0 border-t bg-white py-4 px-4">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-xs sm:text-sm text-gray-600">
             Showing {table.getRowModel().rows.length} of {data.length}{" "}
