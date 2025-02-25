@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Navbar from "./custom-components/Navbar";
+import ClarityScript from "./ClarityScript";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -27,6 +28,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const clarityProjectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
+  console.log(clarityProjectId);
+
   return (
     <html lang="en">
       <body
@@ -34,6 +38,9 @@ export default function RootLayout({
       >
         <Navbar />
         <div className="flex h-[90vh]">{children}</div>
+        {clarityProjectId && (
+          <ClarityScript clarityProjectId={clarityProjectId} />
+        )}
       </body>
     </html>
   );
