@@ -33,14 +33,16 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        {clarityProjectId && (
+          <ClarityScript clarityProjectId={clarityProjectId} />
+        )}
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Navbar />
         <div className="flex h-[90vh]">{children}</div>
-        {clarityProjectId && (
-          <ClarityScript clarityProjectId={clarityProjectId} />
-        )}
       </body>
     </html>
   );
